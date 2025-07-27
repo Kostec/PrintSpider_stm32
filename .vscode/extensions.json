@@ -1,0 +1,14 @@
+{
+    "recommendations": [
+        "dan-c-underwood.arm",
+        "marus25.cortex-debug",
+        "trond-snekvik.gnu-mapfiles",
+        "mcu-debug.memory-view",
+        "twxs.cmake",
+        "josetr.cmake-language-support-vscode",
+        "ms-vscode.cmake-tools",
+        "ms-vscode.cpptools",
+        "ms-vscode.cpptools-extension-pack",
+        "ms-vscode.cpptools-themes"
+    ]
+}

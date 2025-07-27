@@ -1,0 +1,15 @@
+{
+    // "cmake.configureArgs": ["-DTARGET_MCU=SLS_202_devkit"],
+    "cmake.useCMakePresets": "always",
+    "cortex-debug.variableUseNaturalFormat": true,
+    "cortex-debug.openocdPath": "${config:openOCD_dir}/openocd.exe",
+    
+    // Local environment
+    "openOCD_dir" : "C:/tools/stmOpenOCD",
+    "openOCD_CFG": "${workspaceFolder}/test.cfg",
+    "openOCD_scripts": "${config:openOCD_dir}/st_scripts",
+    "plink": "C:/Program Files/PuTTY/plink.exe",
+    "files.associations": {
+        "stm32f4xx_hal.h": "c"
+    }
+}

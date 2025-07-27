@@ -1,0 +1,38 @@
+{
+    "version": "2.0.0",
+    "tasks": [
+        {
+            "label": "SWO",
+            "type": "shell",
+            "command": "${workspaceFolder}/swo.bat",
+            "args": ["${config:plink}"],
+            "isBackground": true,
+            "presentation": {
+                "echo": true,
+                "reveal": "always",
+                "focus": true,
+                "panel": "shared",
+                "clear": true,
+            },
+            "problemMatcher": [],
+        },
+        {
+            "label": "Stop SWO",
+            "type": "shell",
+            "command": "taskkill",
+            "args": ["/IM", "plink.exe", "/F"],
+            "problemMatcher": [],
+            "hide": true,
+            "presentation": {
+            "reveal": "never",
+            "focus": false,
+            "panel": "shared",
+            "showReuseMessage": false,
+            "echo": false,
+            "clear": false,
+            "close": true
+        },
+        }
+    ],
+    
+}

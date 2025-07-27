@@ -1,0 +1,20 @@
+{
+    "version": 8,
+    "configurePresets": [
+        {
+            "name": "PrintSpider_stm32",
+            "displayName": "PrintSpider_stm32",
+            "description": "Using compilers: C = arm-none-eabi-gcc.exe, CXX = arm-none-eabi-g++.exe",
+            "binaryDir": "${sourceDir}/Debug",
+            "generator": "Ninja",
+            "cacheVariables": {
+                "TARGET_MCU": "PrintSpider_stm32",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/${cmake::buildType}",
+                "CMAKE_BUILD_TYPE": "Debug"
+            },
+            "environment": {
+                
+            }
+        }
+    ]
+}

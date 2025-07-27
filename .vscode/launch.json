@@ -1,0 +1,82 @@
+{
+    "version": "0.2.0",
+    "configurations": [
+        {
+            "name": "Deploy & Start",
+            "type":"cortex-debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "launch",
+            "servertype": "openocd",
+            "gdbPath" : "arm-none-eabi-gdb",
+
+// ============== OpenOCD Config BEGIN ==============
+            "interface": "swd",
+            "configFiles": [
+                "${config:openOCD_CFG}"
+            ],
+            "serverArgs": [
+                "-s", "${config:openOCD_scripts}",
+                "-c", "itm port 0 on",
+            ],
+            // ============== OpenOCD Config END ==============
+
+            "runToEntryPoint": "main",
+            // Work around for stopping at main on restart
+            "postRestartCommands": [
+                "break main",
+                "continue"
+            ],
+            // Work around for debugging via SWO
+            "preLaunchTask": "SWO",
+            "postDebugTask": "Stop SWO"
+        },
+        {
+            "name": "Attach",
+            "type":"cortex-debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "attach",
+            "servertype": "openocd",
+            "gdbPath" : "arm-none-eabi-gdb",
+
+// ============== OpenOCD Config BEGIN ==============
+            "interface":"swd",
+            "configFiles": [
+                "${config:openOCD_CFG}"
+            ],
+            "serverArgs": [
+                "-s", "${config:openOCD_scripts}",
+                // "-c", "itm port 0 on",
+            ],
+// ============== OpenOCD Config END ==============
+
+            // Work around for stopping at main on restart
+            "postRestartCommands": [
+                "break main",
+                "continue"
+            ],
+            // "preLaunchTask": "SWO",
+        },
+        {
+            "name": "Attach and Stop",
+            "type":"cortex-debug",
+            "cwd": "${workspaceRoot}",
+            "executable": "${command:cmake.launchTargetPath}",
+            "request": "attach",
+            "servertype": "openocd",
+            "gdbPath" : "arm-none-eabi-gdb",
+
+// ============== OpenOCD Config BEGIN ==============
+            "interface":"swd",
+            "configFiles": [
+                "${config:openOCD_CFG}"
+            ],
+            "serverArgs": [
+                "-s", "${config:openOCD_scripts}",
+                "-c", "itm port 0 on",
+            ],
+// ============== OpenOCD Config END ==============
+        }
+    ]
+}
