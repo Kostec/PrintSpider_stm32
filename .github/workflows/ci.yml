@@ -32,7 +32,7 @@ jobs:
         curl -L https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz \
           -o toolchain.tar.xz
         mkdir -p toolchain
-        tar -xjf toolchain.tar.xz -C toolchain --strip-components=1
+        tar -xf toolchain.tar.xz -C toolchain
 
     - name: Add ARM toolchain to PATH
       run: echo "${{ github.workspace }}/toolchain/bin" >> $GITHUB_PATH
