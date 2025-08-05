@@ -35,10 +35,13 @@ jobs:
         tar -xf toolchain.tar.xz -C toolchain
 
     - name: Add ARM toolchain to PATH
-      run: echo "${{ github.workspace }}/toolchain/bin" >> $PATH
-
+      run: echo "${{ github.workspace }}/toolchain/bin" >> $GITHUB_PATH
+    
     - name: Verify toolchain
-      run: arm-none-eabi-gcc --version
+      run: |
+        echo "PATH after adding toolchain:"
+        echo $PATH
+        arm-none-eabi-gcc --version
 
     # - name: Install ARM toolchain and dependencies
     #   run: |
