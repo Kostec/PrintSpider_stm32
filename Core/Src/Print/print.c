@@ -109,7 +109,7 @@ void digitalWrite(int pin, int state)
 
 void out_to_pins(uint16_t *buffer, int len) {
     for (int i = 0; i < len; i++) {
-        for (int p = 0; p < sizeof(gpio_bus); p++) {
+        for (int p = 0; p < sizeof(gpio_bus)/sizeof(gpio_bus[0]); p++) {
             digitalWrite(p, buffer[i] >> p & 1);
         }
     }
