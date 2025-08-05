@@ -23,7 +23,7 @@ jobs:
     - name: Install Clang 19 if cache miss
       if: steps.cache-clang.outputs.cache-hit != 'true'
       run: |
-        mkdir -p $HOME/.cache/clang-19
+        mkdir -p ${{ github.workspace }}/host-toolchain/clang-19
         curl -sSL \
           https://github.com/llvm/llvm-project/releases/download/llvmorg-19.0.0/clang+llvm-19.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
           | tar -xJ -C host-toolchain/clang-19
