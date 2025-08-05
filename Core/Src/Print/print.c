@@ -18,7 +18,7 @@ limitations under the License.
 
 #include <string.h>
 #include <stdlib.h>
-#include "printspider.h"
+#include <Print/printspider.h>
 #include <Print/print.h>
 #include <stdio.h>
 #include <stm32f4xx_hal_gpio.h>
@@ -174,7 +174,7 @@ void send_image_row_black(black_image_part_t *black_image_part) {
         for (int y = 0; y < PRINTSPIDER_BLACK_NOZZLES_IN_ROW; y++) {
             // We take anything but white in any color channel of the image to
             // mean we want black there.
-            uint8_t color;
+            uint8_t color = 0;
             if (row == 0) {
                 color = black_image_part->first_row[y];
             } else if (row == 1) {
@@ -276,7 +276,7 @@ void PRINT_print(void) {
     black_image_part_t *black_part_adr = &black_part;
     black_part_adr->first_row = first_row_value;
     black_part_adr->second_row = second_row_value;
-    printf("%s: row_size=%d\r\n", __FUNCTION__, sizeof(first_row_value));
+    // printf("%s: row_size=%lld\r\n", __FUNCTION__, sizeof(first_row_value));
     send_image_row_black(black_part_adr);
 #endif
 }

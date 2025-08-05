@@ -10,6 +10,19 @@
     "openOCD_scripts": "${config:openOCD_dir}/st_scripts",
     "plink": "C:/Program Files/PuTTY/plink.exe",
     "files.associations": {
-        "stm32f4xx_hal.h": "c"
-    }
+        "stm32f4xx_hal.h": "c",
+        "stm32f4xx_hal_gpio.h": "c",
+        "stm32f4xx_hal_def.h": "c",
+        "stm32f4xx.h": "c",
+        "stm32f4xx_hal_cortex.h": "c",
+        "printspider.h": "c",
+        "stm32f4xx_hal_conf.h": "c"
+    },
+
+    "cmake.buildBeforeRun": true,
+    "cmake.defaultConfigurePreset": "host-tests",
+    "cmake.configureOnOpen": true,
+    "cmake.buildBeforeTest": true,
+    "cmake.testExplorer.enabled": true,
+    "cmake.ctestRegexTestName": ".*"
 }

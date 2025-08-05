@@ -1,0 +1,28 @@
+name: STM32 CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - uses: llvm/clang@v4
+      with:
+        version: '19'            # or 'latest'
+        install-tools: true      # set clang-format, clang-tidy и т.д.
+    
+    - name: Check clang-format
+      run: |
+        clang-format --version
+      
+    - name: Build tests
+      run: |
+        mkdir build
+        cmake --preset host-tests
+        cmake --build --preset build-tests
