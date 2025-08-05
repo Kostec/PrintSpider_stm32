@@ -31,8 +31,8 @@ jobs:
     - name: Add Clang to PATH
       run: echo "${{ github.workspace }}/host-toolchain/llvm-19/clang+llvm-19.1.0-aarch64-linux-gnu/bin" >> $GITHUB_PATH
 
-    - name: Check clang-format
-      run: clang-format --version
+    - name: Check clang version
+      run: clang --version
       
     - name: Build tests
       run: |
