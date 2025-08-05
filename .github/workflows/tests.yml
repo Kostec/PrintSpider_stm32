@@ -15,7 +15,7 @@ jobs:
       id: cache-clang
       uses: actions/cache@v4
       with:
-        path: host-toolchain
+        path: host-toolchain/clang-19
         key: ${{ runner.os }}-clang-19
         restore-keys: |
           ${{ runner.os }}-clang-
@@ -26,12 +26,12 @@ jobs:
         mkdir -p $HOME/.cache/clang-19
         curl -sSL \
           https://github.com/llvm/llvm-project/releases/download/llvmorg-19.0.0/clang+llvm-19.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
-          | tar -xJ -C $HOME/.cache/clang-19
-        mv $HOME/.cache/clang-19/clang+llvm-19.0.0-x86_64-linux-gnu-ubuntu-20.04 \
-           $HOME/.cache/clang-19/llvm-19
+          | tar -xJ -C host-toolchain/clang-19
+        mv ${{ github.workspace }}/host-toolchain/clang-19/clang+llvm-19.0.0-x86_64-linux-gnu-ubuntu-20.04 \
+           ${{ github.workspace }}/host-toolchain/clang-19/llvm-19
 
     - name: Add Clang to PATH
-      run: echo "$HOME/.cache/clang-19/llvm-19/bin" >> $GITHUB_PATH
+      run: echo "${{ github.workspace }}/host-toolchain/clang-19/llvm-19/bin" >> $GITHUB_PATH
 
     - name: Check clang-format
       run: clang-format --version
