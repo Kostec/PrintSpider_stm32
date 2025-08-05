@@ -15,7 +15,7 @@ limitations under the License.
 */
 
 // This contains the routines to convert nozzle data to drive waveforms.
-#include "printspider.h"
+#include "Print/printspider.h"
 
 // #include <stdio.h>
 // #include <string.h>

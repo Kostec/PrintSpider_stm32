@@ -1,0 +1,38 @@
+name: STM32 CI
+
+env:
+  PROJECT_NAME: ${{ github.event.repository.name }}
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Start build"
+        uses: ./.github/workflows/build.yml
+      - run: echo "Build"
+
+  test:
+    needs: build          # запустится после build
+    runs-on: ubuntu-latest
+    steps:
+      - name: "Start tests"
+        uses: ./.github/workflows/tests.yml
+      - run: ctest --test-dir ./build/build-host/
+
+  deploy:
+    needs: [build, test]
+    runs-on: ubuntu-latest
+    steps:
+      - name: Artifacts
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ env.PROJECT_NAME }}-${{ github.sha }}
+          path: |
+            build/Release/*.bin
+            build/Release/*.hex
+            build/Release/*.elf
+            build/build-host/Testing/Temporary
