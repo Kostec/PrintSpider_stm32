@@ -32,6 +32,11 @@
     ],
     "buildPresets": [
     {
+        "name": "build-fw",
+        "configurePreset": "PrintSpider_stm32",
+        "jobs": 4
+    },
+    {
       "name": "build-tests",
       "configurePreset": "host-tests",
       "jobs": 4
