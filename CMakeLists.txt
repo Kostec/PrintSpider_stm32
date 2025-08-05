@@ -103,3 +103,6 @@ set (CMAKE_STATIC_LIBRARY_SUFFIX ".a")
 set (CMAKE_C_FLAGS "${MCPU} -std=gnu11 ${MFPU} ${MFLOAT_ABI} ${RUNTIME_LIBRARY} -mthumb -Wall -Werror")
 set (CMAKE_EXE_LINKER_FLAGS "-T${LINKER_SCRIPT} ${RUNTIME_LIBRARY_SYSCALLS} -Wl,-Map=PrintSpider_stm32.map -Wl,--gc-sections -static -Wl,--start-group -lc -lm -Wl,--end-group")
 set (CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
+
+set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
+set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
