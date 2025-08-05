@@ -16,11 +16,34 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
+    
+    - name: Restore ARM toolchain cache
+      id: cache-toolchain
+      uses: actions/cache@v4
+      with:
+        path: toolchain
+        key: ${{ runner.os }}-arm-toolchain-v14
+        restore-keys: |
+          ${{ runner.os }}-arm-toolchain-
 
-    - name: Install ARM toolchain and dependencies
+    - name: Download and extract ARM toolchain
+      if: steps.cache-toolchain.outputs.cache-hit != 'true'
       run: |
-        sudo apt-get update
-        sudo apt-get install -y gcc-arm-none-eabi make
+        curl -L https://developer.arm.com/.../gcc-arm-none-eabi-10-2020-q4-major-x86_64-linux.tar.bz2 \
+          -o toolchain.tar.bz2
+        mkdir -p toolchain
+        tar -xjf toolchain.tar.bz2 -C toolchain --strip-components=1
+
+    - name: Add ARM toolchain to PATH
+      run: echo "${{ github.workspace }}/toolchain/bin" >> $GITHUB_PATH
+
+    - name: Verify toolchain
+      run: arm-none-eabi-gcc --version
+
+    # - name: Install ARM toolchain and dependencies
+    #   run: |
+    #     sudo apt-get update
+    #     sudo apt-get install -y gcc-arm-none-eabi make
 
     - name: Build Firmvare
       run: |
