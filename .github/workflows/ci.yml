@@ -34,25 +34,12 @@ jobs:
         mkdir -p toolchain
         tar -xf toolchain.tar.xz -C toolchain
 
-    - name: Debug toolchain contents
-      run: |
-        echo "Listing toolchain:"
-        ls -la "${{ github.workspace }}/toolchain" || echo "Dir not found or empty"
-
     - name: Add ARM toolchain to PATH
       run: echo "${{ github.workspace }}/toolchain/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
     
     - name: Verify toolchain
-      run: |
-        echo "PATH after adding toolchain:"
-        echo $PATH
-        arm-none-eabi-gcc --version
-
-    # - name: Install ARM toolchain and dependencies
-    #   run: |
-    #     sudo apt-get update
-    #     sudo apt-get install -y gcc-arm-none-eabi make
-
+      run: arm-none-eabi-gcc --version
+      
     - name: Build Firmvare
       run: |
         mkdir build
