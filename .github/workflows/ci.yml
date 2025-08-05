@@ -18,7 +18,6 @@ jobs:
       run: |
         sudo apt-get update
         sudo apt-get install -y gcc-arm-none-eabi make
-        sudo apt-get install -y ninja
 
     - name: Build Firmvare
       run: |
