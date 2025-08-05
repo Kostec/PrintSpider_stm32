@@ -1,3 +1,5 @@
+name: STM32 CI
+
 on:
   push:
   pull_request:
@@ -35,6 +37,5 @@ jobs:
       
     - name: Build Firmvare
       run: |
-        mkdir build
-        cmake ./CMakeLists.txt -DCMAKE_BUILD_TYPE=Release -G Ninja -B ./build/Release
-        ninja -C ./build/Release
+        cmake --preset PrintSpider_stm32
+        cmake --build --preset build-fw
