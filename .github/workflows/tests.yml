@@ -18,7 +18,13 @@ jobs:
         path: host-toolchain/llvm-19
         key: ${{ runner.os }}-llvm-19
         restore-keys: |
-          ${{ runner.os }}-clang-
+          ${{ runner.os }}-llvm-
+    
+    - name: Install xz-utils (for tar .xz support)
+      if: steps.cache-clang.outputs.cache-hit != 'true'
+      run: |
+          sudo apt-get update
+          sudo apt-get install -y xz-utils
 
     - name: Install Clang 19 if cache miss
       if: steps.cache-clang.outputs.cache-hit != 'true'
