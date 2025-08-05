@@ -91,7 +91,14 @@ project(${PROJECT_NAME})
 enable_language(ASM)
 
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${GLOB_RECURSE})
-add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${CMAKE_PROJECT_NAME}>)
+
+# add_custom_command(TARGET ${CMAKE_PROJECT_NAME} POST_BUILD COMMAND ${CMAKE_SIZE} $<TARGET_FILE:${CMAKE_PROJECT_NAME}>)
+
+add_custom_command(TARGET ${PROJECT_NAME}
+    POST_BUILD
+    COMMAND arm-none-eabi-size $<TARGET_FILE:${PROJECT_NAME}>
+    COMMAND arm-none-eabi-objdump -h $<TARGET_FILE:${PROJECT_NAME}>
+)
 
 add_compile_definitions (${PROJECT_DEFINES})
 include_directories (${PROJECT_INCLUDES})
