@@ -20,17 +20,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-llvm-
     
-    - name: Install xz-utils (for tar .xz support)
-      if: steps.cache-clang.outputs.cache-hit != 'true'
-      run: |
-          sudo apt-get update
-          sudo apt-get install -y xz-utils
-
     - name: Install Clang 19 if cache miss
       if: steps.cache-clang.outputs.cache-hit != 'true'
       run: |
         mkdir -p ${{ github.workspace }}/host-toolchain/llvm-19
-        curl -sSL https://github.com/llvm/llvm-project/releases/download/llvmorg-19.0.0/clang+llvm-19.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
+        curl -L https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.0/clang+llvm-19.1.0-aarch64-linux-gnu.tar.xz \
             -o llvm-19.tar.xz
         tar -xf llvm-19.tar.xz -C ${{ github.workspace }}/host-toolchain/llvm-19
         mv ${{ github.workspace }}/host-toolchain/llvm-19/clang+llvm-19.0.0-x86_64-linux-gnu-ubuntu-20.04 \
