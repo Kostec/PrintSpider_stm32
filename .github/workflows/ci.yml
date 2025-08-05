@@ -1,5 +1,8 @@
 name: STM32 CI
 
+env:
+  PROJECT_NAME: ${{ github.event.repository.name }}
+
 on:
   push:
     branches: [main]
@@ -25,10 +28,10 @@ jobs:
         cmake ./CMakeLists.txt -DCMAKE_BUILD_TYPE=Release -G Ninja -B ./build/Release
         ninja -C ./build/Release
 
-    - name: Archive artifacts
+    - name: Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: firmware
+        name: ${{ env.PROJECT_NAME }}-${{ github.sha }}
         path: |
           build/Release/*.bin
           build/Release/*.hex
