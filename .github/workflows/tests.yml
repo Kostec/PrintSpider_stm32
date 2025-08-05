@@ -1,8 +1,7 @@
 name: STM32 CI
 
 on:
-  push:
-  pull_request:
+  workflow_call:
 
 jobs:
   build:

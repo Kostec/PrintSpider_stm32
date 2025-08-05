@@ -9,19 +9,11 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Start build"
-        uses: ./.github/workflows/build.yml
-      - run: echo "Build"
+    uses: ./.github/workflows/build.yml
 
   test:
-    needs: build          # запустится после build
-    runs-on: ubuntu-latest
-    steps:
-      - name: "Start tests"
-        uses: ./.github/workflows/tests.yml
-      - run: ctest --test-dir ./build/build-host/
+    needs: build          # runs after build
+    uses: ./.github/workflows/tests.yml
 
   deploy:
     needs: [build, test]
