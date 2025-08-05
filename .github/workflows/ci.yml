@@ -29,10 +29,10 @@ jobs:
     - name: Download and extract ARM toolchain
       if: steps.cache-toolchain.outputs.cache-hit != 'true'
       run: |
-        curl -L https://developer.arm.com/-/media/Files/downloads/gnu-rm/10.3-2021.10/gcc-arm-none-eabi-10.3-2021.10-x86_64-linux.tar.bz2 \
-          -o toolchain.tar.bz2
+        curl -L https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz \
+          -o toolchain.tar.xz
         mkdir -p toolchain
-        tar -xjf toolchain.tar.bz2 -C toolchain --strip-components=1
+        tar -xjf toolchain.tar.xz -C toolchain --strip-components=1
 
     - name: Add ARM toolchain to PATH
       run: echo "${{ github.workspace }}/toolchain/bin" >> $GITHUB_PATH
