@@ -87,7 +87,7 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 #######################################################################
 
 ################## PROJECT SETUP ######################################
-project(${PROJECT_NAME})
+project(${PROJECT_NAME} C CXX ASM)
 enable_language(ASM)
 
 add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${GLOB_RECURSE})
@@ -97,7 +97,7 @@ add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${GLOB_RECURSE})
 add_custom_command(TARGET ${PROJECT_NAME}
     POST_BUILD
     COMMAND arm-none-eabi-size $<TARGET_FILE:${PROJECT_NAME}>
-    COMMAND arm-none-eabi-objdump -h $<TARGET_FILE:${PROJECT_NAME}>
+    # COMMAND arm-none-eabi-objdump -h $<TARGET_FILE:${PROJECT_NAME}>
 )
 
 add_compile_definitions (${PROJECT_DEFINES})
@@ -115,9 +115,9 @@ set(HEX_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.hex)
 set(BIN_FILE ${PROJECT_BINARY_DIR}/${PROJECT_NAME}.bin)
 
 add_custom_command(
-    TARGET ${PROJECT_NAME}.elf POST_BUILD
-    COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}.elf> ${HEX_FILE}
-    COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}.elf> ${BIN_FILE}
+    TARGET ${PROJECT_NAME} POST_BUILD
+    COMMAND ${CMAKE_OBJCOPY} -Oihex $<TARGET_FILE:${PROJECT_NAME}> ${HEX_FILE}
+    COMMAND ${CMAKE_OBJCOPY} -Obinary $<TARGET_FILE:${PROJECT_NAME}> ${BIN_FILE}
     COMMENT "Building ${HEX_FILE}
     Building ${BIN_FILE}"
 )
