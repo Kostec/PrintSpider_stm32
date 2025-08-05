@@ -11,14 +11,30 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     
-    - uses: llvm/clang@v4
+    - name: Cache Clang 19
+      id: cache-clang
+      uses: actions/cache@v4
       with:
-        version: '19'            # or 'latest'
-        install-tools: true      # set clang-format, clang-tidy и т.д.
-    
-    - name: Check clang-format
+        path: host-toolchain
+        key: ${{ runner.os }}-clang-19
+        restore-keys: |
+          ${{ runner.os }}-clang-
+
+    - name: Install Clang 19 if cache miss
+      if: steps.cache-clang.outputs.cache-hit != 'true'
       run: |
-        clang-format --version
+        mkdir -p $HOME/.cache/clang-19
+        curl -sSL \
+          https://github.com/llvm/llvm-project/releases/download/llvmorg-19.0.0/clang+llvm-19.0.0-x86_64-linux-gnu-ubuntu-20.04.tar.xz \
+          | tar -xJ -C $HOME/.cache/clang-19
+        mv $HOME/.cache/clang-19/clang+llvm-19.0.0-x86_64-linux-gnu-ubuntu-20.04 \
+           $HOME/.cache/clang-19/llvm-19
+
+    - name: Add Clang to PATH
+      run: echo "$HOME/.cache/clang-19/llvm-19/bin" >> $GITHUB_PATH
+
+    - name: Check clang-format
+      run: clang-format --version
       
     - name: Build tests
       run: |
