@@ -27,11 +27,9 @@ jobs:
         curl -L https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.0/clang+llvm-19.1.0-aarch64-linux-gnu.tar.xz \
             -o llvm-19.tar.xz
         tar -xf llvm-19.tar.xz -C ${{ github.workspace }}/host-toolchain/llvm-19
-        mv ${{ github.workspace }}/host-toolchain/llvm-19/clang+llvm-19.1.0-aarch64-linux-gnu \
-           ${{ github.workspace }}/host-toolchain/llvm-19
 
     - name: Add Clang to PATH
-      run: echo "${{ github.workspace }}/host-toolchain/llvm-19/bin" >> $GITHUB_PATH
+      run: echo "${{ github.workspace }}/host-toolchain/llvm-19/clang+llvm-19.1.0-aarch64-linux-gnu/bin" >> $GITHUB_PATH
 
     - name: Check clang-format
       run: clang-format --version
