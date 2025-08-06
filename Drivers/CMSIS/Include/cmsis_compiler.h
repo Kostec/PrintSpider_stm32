@@ -31,7 +31,9 @@
 #if defined(CMSIS_SIMULATION)
   // #define __GNUC__ __clang_major__
   #define __STATIC_INLINE static inline
+#ifndef __RAM_FUNC
   #define __RAM_FUNC
+#endif
   #define __ASM(...)
   #define __INLINE inline
   #define __NO_RETURN
