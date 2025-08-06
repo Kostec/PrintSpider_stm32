@@ -29,37 +29,6 @@ jobs:
         cmake --preset host-tests
         cmake --build --preset build-tests
 
-        name: STM32 CI
-
-on:
-  workflow_call:
-
-jobs:
-  build:
-    runs-on: ubuntu-latest
-
-    env:
-      CACHE_DIR: ${{ github.workspace }}/host/toolchain/llvm-21.1.0-rc2
-
-    steps:
-    - name: Checkout repository
-      uses: actions/checkout@v4
-        
-    - name: Set up Clang & LLVM
-      uses: egor-tensin/setup-clang@v1
-      with:
-        version: latest
-        platform: x86_64
-
-    - name: Check clang version
-      run: clang --version
-      
-    - name: Build tests
-      run: |
-        mkdir build
-        cmake --preset host-tests
-        cmake --build --preset build-tests
-
     - name: Run tests
       run: ctest --test-dir ./build/build-host/
 
