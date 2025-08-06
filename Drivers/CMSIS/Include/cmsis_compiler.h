@@ -301,8 +301,6 @@
     #warning No compiler specific solution for __COMPILER_BARRIER. __COMPILER_BARRIER is ignored.
     #define __COMPILER_BARRIER()                   (void)0
   #endif
-
-#elif defined (CMSIS_SIMULATION)
 #else
   #error Unknown compiler.
 #endif

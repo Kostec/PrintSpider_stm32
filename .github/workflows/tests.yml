@@ -13,16 +13,7 @@ jobs:
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
-    
-    - name: Cache Clang 21.1.0-rc2
-      id: cache-clang
-      uses: actions/cache@v4
-      with:
-        path: ${{ env.CACHE_DIR }}
-        key: ${{ runner.os }}-llvm-21.1.0-rc2
-        restore-keys: |
-          ${{ runner.os }}-llvm-
-    
+        
     - name: Set up Clang & LLVM
       uses: egor-tensin/setup-clang@v1
       with:
