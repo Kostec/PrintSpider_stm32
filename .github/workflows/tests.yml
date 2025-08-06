@@ -7,29 +7,38 @@ jobs:
   build:
     runs-on: ubuntu-latest
 
+    env:
+      CACHE_DIR: ${{ github.workspace }}/host/toolchain/llvm-21.1.0-rc2
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
     
-    - name: Cache Clang 19
+    - name: Cache Clang 21.1.0-rc2
       id: cache-clang
       uses: actions/cache@v4
       with:
-        path: host-toolchain/llvm-19
-        key: ${{ runner.os }}-llvm-19
+        path: ${{ env.CACHE_DIR }}
+        key: ${{ runner.os }}-llvm-21.1.0-rc2
         restore-keys: |
           ${{ runner.os }}-llvm-
     
-    - name: Install Clang 19 if cache miss
-      if: steps.cache-clang.outputs.cache-hit != 'true'
+    - name: Clone LLVM monorepo
       run: |
-        mkdir -p ${{ github.workspace }}/host-toolchain/llvm-19
-        curl -L https://github.com/llvm/llvm-project/releases/download/llvmorg-19.1.0/clang+llvm-19.1.0-aarch64-linux-gnu.tar.xz \
-            -o llvm-19.tar.xz
-        tar -xf llvm-19.tar.xz -C ${{ github.workspace }}/host-toolchain/llvm-19
-
+        git clone https://github.com/llvm/llvm-project.git
+        cd llvm-project
+        git checkout llvmorg-21.1.0-rc2
+        mkdir build && cd build
+        cmake -G Ninja ../llvm \
+          -DLLVM_ENABLE_PROJECTS="clang;lld" \
+          -DCMAKE_BUILD_TYPE=Release \
+          -DCMAKE_INSTALL_PREFIX=$RUNNER_TEMP/llvm
+        ninja
+        ninja install
+        copy --recursive $RUNNER_TEMP/llvm/ ${{ env.CACHE_DIR }}
+  
     - name: Add Clang to PATH
-      run: echo "${{ github.workspace }}/host-toolchain/llvm-19/clang+llvm-19.1.0-aarch64-linux-gnu/bin" >> $GITHUB_PATH
+      run: echo "$RUNNER_TEMP/llvm/bin" >> $GITHUB_PATH
 
     - name: Check clang version
       run: clang --version
