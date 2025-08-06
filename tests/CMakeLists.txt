@@ -6,6 +6,8 @@ add_executable(core_tests
 )
 
 message(STATUS WIN32=${WIN32})
+message(STATUS CMSIS_SIMULATION=${CMSIS_SIMULATION})
+
 if (WIN32)
   target_compile_definitions(core_tests PRIVATE
     GTEST_HAS_PTHREAD=0
