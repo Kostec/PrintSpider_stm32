@@ -4,11 +4,13 @@ add_executable(core_tests
   test_main.cpp
   test_foo.cpp
 )
-message(STATUS WIN32=${WIN32})
 
-target_compile_definitions(core_tests PRIVATE
-  GTEST_HAS_PTHREAD=0
-)
+message(STATUS WIN32=${WIN32})
+if (WIN32)
+  target_compile_definitions(core_tests PRIVATE
+    GTEST_HAS_PTHREAD=0
+  )
+endif()
 
 target_link_libraries(core_tests PRIVATE
   gtest_main
