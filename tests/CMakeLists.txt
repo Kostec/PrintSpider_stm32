@@ -7,7 +7,7 @@ add_executable(core_tests
 
 message(STATUS WIN32=${WIN32})
 message(STATUS CMSIS_SIMULATION=${CMSIS_SIMULATION})
-message(STATUS __GNUC__=${__GNUC__})
+remove_definitions(__GNUC__)
 
 if (WIN32)
   target_compile_definitions(core_tests PRIVATE
