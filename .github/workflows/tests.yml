@@ -23,22 +23,11 @@ jobs:
         restore-keys: |
           ${{ runner.os }}-llvm-
     
-    - name: Clone LLVM monorepo
-      run: |
-        git clone https://github.com/llvm/llvm-project.git
-        cd llvm-project
-        git checkout llvmorg-21.1.0-rc2
-        mkdir build && cd build
-        cmake -G Ninja ../llvm \
-          -DLLVM_ENABLE_PROJECTS="clang;lld" \
-          -DCMAKE_BUILD_TYPE=Release \
-          -DCMAKE_INSTALL_PREFIX=$RUNNER_TEMP/llvm
-        ninja
-        ninja install
-        copy --recursive $RUNNER_TEMP/llvm/ ${{ env.CACHE_DIR }}
-  
-    - name: Add Clang to PATH
-      run: echo "$RUNNER_TEMP/llvm/bin" >> $GITHUB_PATH
+    - name: Set up Clang & LLVM
+      uses: egor-tensin/setup-clang@v4
+      with:
+        version: latest
+        platform: x86_64
 
     - name: Check clang version
       run: clang --version
