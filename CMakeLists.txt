@@ -62,7 +62,6 @@ message(STATUS BUILD_TESTS=${BUILD_TESTS} CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMP
 if(BUILD_TESTS)
     message(STATUS "Configure Tests")
 
-    add_compile_definitions(CMSIS_SIMULATION=)
     add_compile_definitions(${PROJECT_DEFINES})    
     LIST(REMOVE_ITEM ${SOURCES} D:/Projects/STM32CubeIDE/PrintSpider_stm32/Core/Src/syscalls.c)
     add_library(core_lib STATIC ${SOURCES})

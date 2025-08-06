@@ -36,3 +36,5 @@ set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 set (CMAKE_C_FLAGS "-std=gnu11 -Wall -Werror -Wextra-tokens -Wno-pointer-to-int-cast -Wno-error=pointer-to-int-cast -Wint-to-pointer-cast -Wno-error=int-to-pointer-cast -Wunused-but-set-variable -Wno-error=unused-but-set-variable")
 set (CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
+
+add_compile_definitions(CMSIS_SIMULATION)
