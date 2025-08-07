@@ -55,8 +55,6 @@ project(${PROJECT_NAME} C CXX ASM)
 enable_language(ASM)
 
 set (CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
-
-
 # Tests definition
 message(STATUS BUILD_TESTS=${BUILD_TESTS} CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING})
 if(BUILD_TESTS)

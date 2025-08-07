@@ -27,41 +27,10 @@
 
 #include <stdint.h>
 
-/* Clang simulation */
-#if defined(CMSIS_SIMULATION)
-  // #define __GNUC__ __clang_major__
-  #define __STATIC_INLINE static inline
-#ifndef __RAM_FUNC
-  #define __RAM_FUNC
-#endif
-  #define __ASM(...)
-  #define __INLINE inline
-  #define __NO_RETURN
-  #define __NO_RESTRICT
-  #define __RESTRICT
-  #define __ASM(...)
-  #define __weak
-  // заглушаем все ARM-барьеры
-  #define __ISB(...)
-  #define __DSB(...)
-  #define __SEV(...)
-  #define __NOP(...)
-  #define __WFE(...)
-  #define __DMB(...)
-  #define __WFI(...)
-
-  #define __COMPILER_BARRIER(...)
-
-  #define __disable_irq(...)
-
-  #define S_IFCHR  _S_IFCHR
-  #define __LDREXW(...) 0
-  #define __STREXW(...) 0
-
 /*
  * Arm Compiler 4/5
  */
-#elif   defined ( __CC_ARM )
+#if   defined ( __CC_ARM )
   #include "cmsis_armcc.h"
 
 
@@ -303,6 +272,8 @@
     #warning No compiler specific solution for __COMPILER_BARRIER. __COMPILER_BARRIER is ignored.
     #define __COMPILER_BARRIER()                   (void)0
   #endif
+
+
 #else
   #error Unknown compiler.
 #endif
