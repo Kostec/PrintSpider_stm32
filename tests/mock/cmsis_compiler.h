@@ -4,9 +4,9 @@
 #include <stdint.h>
 
 #define __STATIC_INLINE static inline
-#ifndef __RAM_FUNC
-  #define __RAM_FUNC
-#endif
+// #ifndef __RAM_FUNC
+//   #define __RAM_FUNC
+// #endif
   #define __ASM(...)
   #define __INLINE inline
   #define __NO_RETURN
