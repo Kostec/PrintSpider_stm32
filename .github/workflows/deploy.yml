@@ -19,6 +19,7 @@ jobs:
     needs: [build, test]
     runs-on: ubuntu-latest
     steps:
+      - 
       - name: Artifacts
         uses: actions/upload-artifact@v4
         with:
@@ -27,4 +28,4 @@ jobs:
             build/Release/*.bin
             build/Release/*.hex
             build/Release/*.elf
-            build/build-host/tests/Testing
+            build/build-host/tests/*/LastTest.log
