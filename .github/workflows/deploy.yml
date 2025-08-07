@@ -27,4 +27,4 @@ jobs:
             build/Release/*.bin
             build/Release/*.hex
             build/Release/*.elf
-            build/build-host/Testing/Temporary
+            build/build-host/tests/Testing/Temporary
