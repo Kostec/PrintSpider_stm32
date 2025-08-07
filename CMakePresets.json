@@ -39,7 +39,10 @@
     {
       "name": "build-tests",
       "configurePreset": "host-tests",
-      "jobs": 4
+      "jobs": 4,
+      "targets":[
+        "test_runner"
+      ]
     }
   ]
 }

@@ -16,13 +16,13 @@
         "stm32f4xx.h": "c",
         "stm32f4xx_hal_cortex.h": "c",
         "printspider.h": "c",
-        "stm32f4xx_hal_conf.h": "c"
+        "stm32f4xx_hal_conf.h": "c",
+        "core_cm4.h": "c",
+        "stdint.h": "c",
+        "cmsis_compiler.h": "c"
     },
 
+    "cmake.buildDirectory": "build/",
     "cmake.buildBeforeRun": true,
-    "cmake.defaultConfigurePreset": "host-tests",
     "cmake.configureOnOpen": true,
-    "cmake.buildBeforeTest": true,
-    "cmake.testExplorer.enabled": true,
-    "cmake.ctestRegexTestName": ".*"
 }
