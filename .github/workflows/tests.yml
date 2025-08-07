@@ -6,6 +6,9 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        llvm-version: [19]
 
     env:
       CACHE_DIR: ${{ github.workspace }}/host/toolchain/llvm-21.1.0-rc2
@@ -14,10 +17,19 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
         
-    - name: Set up Clang & LLVM
+    - name: Восстановить кэш LLVM
+      id: llvm-cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/llvm
+        key: llvm-${{ matrix.llvm-version }}-${{ runner.os }}
+
+    - name: Install LLVM (If cache not found)
+      if: steps.llvm-cache.outputs.cache-hit != 'true'
       uses: KyleMayes/install-llvm-action@v2
       with:
-        version: "19"
+        version: ${{ matrix.llvm-version }}
+        directory: ${{ runner.temp }}/llvm
 
     - name: Check clang version
       run: clang --version
