@@ -15,20 +15,19 @@ jobs:
       uses: actions/checkout@v4
         
     - name: Set up Clang & LLVM
-      uses: egor-tensin/setup-clang@v1
+      uses: llvm/llvm-install@v1
       with:
-        version: latest
-        platform: x86_64
+        version: "19.0.1"
+        components: "clang;lld;lldb"
 
     - name: Check clang version
       run: clang --version
       
     - name: Build tests
       run: |
-        mkdir build
         cmake --preset host-tests
         cmake --build --preset build-tests
 
     - name: Run tests
-      run: ctest --test-dir ./build/build-host/
+      run: ctest --test-dir ./build/build-host/tests
 

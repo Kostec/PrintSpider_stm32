@@ -4,7 +4,7 @@
         {
             "name": "PrintSpider_stm32",
             "displayName": "PrintSpider_stm32",
-            "description": "Using compilers: C = arm-none-eabi-gcc.exe, CXX = arm-none-eabi-g++.exe",
+            "description": "STM32 toolchain",
             "binaryDir": "${sourceDir}/Debug",
             "generator": "Ninja",
             "toolchainFile": "${sourceDir}/cmake/toolchains/stm32-toolchain.cmake",
@@ -18,7 +18,7 @@
         {
             "name": "host-tests",
             "displayName": "🏠 Host Tests",
-            "description": "Build tests for x86/x64 (without STM32 toolchain)",
+            "description": "x86/x64 toolchain",
             "generator": "Ninja",
             "toolchainFile": "${sourceDir}/cmake/toolchains/host-toolchain.cmake",
             "binaryDir": "${sourceDir}/build/build-host",
