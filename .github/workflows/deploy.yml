@@ -19,7 +19,6 @@ jobs:
     needs: [build, test]
     runs-on: ubuntu-latest
     steps:
-      - 
       - name: Artifacts
         uses: actions/upload-artifact@v4
         with:
