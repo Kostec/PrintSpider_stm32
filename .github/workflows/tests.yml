@@ -45,6 +45,6 @@ jobs:
     - name: Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.PROJECT_NAME }}-${{ github.sha }}
+        name: build-output-${{ github.sha }}
         path: ./build/build-host/tests/Testing/*.log
 
