@@ -4,17 +4,45 @@
         {
             "name": "PrintSpider_stm32",
             "displayName": "PrintSpider_stm32",
-            "description": "Using compilers: C = arm-none-eabi-gcc.exe, CXX = arm-none-eabi-g++.exe",
-            "binaryDir": "${sourceDir}/Debug",
+            "description": "STM32 toolchain",
+            "binaryDir": "${sourceDir}/build",
             "generator": "Ninja",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/stm32-toolchain.cmake",
             "cacheVariables": {
-                "TARGET_MCU": "PrintSpider_stm32",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/${cmake::buildType}",
-                "CMAKE_BUILD_TYPE": "Debug"
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTS": "OFF",
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/stm32"
             },
-            "environment": {
-                
+            "environment": {}
+        },
+        {
+            "name": "host-tests",
+            "displayName": "🏠 Host Tests",
+            "description": "x86/x64 toolchain",
+            "generator": "Ninja",
+            "toolchainFile": "${sourceDir}/cmake/toolchains/host-toolchain.cmake",
+            "binaryDir": "${sourceDir}/build/build-host",
+            "cacheVariables": {
+                "CMAKE_BUILD_TYPE": "Debug",
+                "BUILD_TESTS": "ON",
+                "CMAKE_CROSSCOMPILING": false
             }
         }
-    ]
+
+    ],
+    "buildPresets": [
+    {
+        "name": "build-fw",
+        "configurePreset": "PrintSpider_stm32",
+        "jobs": 4
+    },
+    {
+      "name": "build-tests",
+      "configurePreset": "host-tests",
+      "jobs": 4,
+      "targets":[
+        "test_runner"
+      ]
+    }
+  ]
 }

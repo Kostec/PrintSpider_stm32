@@ -1,0 +1,52 @@
+name: STM32 CI
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        llvm-version: [19]
+
+    env:
+      CACHE_DIR: ${{ github.workspace }}/host/toolchain/llvm-21.1.0-rc2
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+        
+    - name: Restore LLVM cache
+      id: llvm-cache
+      uses: actions/cache@v4
+      with:
+        path: ${{ runner.temp }}/llvm
+        key: llvm-${{ matrix.llvm-version }}-${{ runner.os }}
+
+    - name: Install LLVM (If cache not found)
+      if: steps.llvm-cache.outputs.cache-hit != 'true'
+      uses: KyleMayes/install-llvm-action@v2
+      with:
+        version: ${{ matrix.llvm-version }}
+        directory: ${{ runner.temp }}/llvm
+
+    - name: Check clang version
+      run: clang --version
+      
+    - name: Build tests
+      run: |
+        cmake --preset host-tests
+        cmake --build --preset build-tests
+
+    - name: Run tests
+      run: |
+        ctest --test-dir ./build/build-host/tests
+        ls -R build/build-host/tests/Testing
+    
+    - name: Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: tests-output-${{ github.sha }}
+        path: build/build-host/tests/Testing/Temporary/*.log
+
