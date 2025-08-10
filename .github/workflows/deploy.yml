@@ -24,7 +24,6 @@ jobs:
         with:
           name: ${{ env.PROJECT_NAME }}-${{ github.sha }}
           path: |
-            build/*.bin
             build/*.hex
             build/*.elf
-            build/build-host/tests/Testing
+            build/build-host/tests/Testing/*.log
