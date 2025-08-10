@@ -40,11 +40,13 @@ jobs:
         cmake --build --preset build-tests
 
     - name: Run tests
-      run: ctest --test-dir ./build/build-host/tests
+      run: |
+        ctest --test-dir ./build/build-host/tests
+        ls -R build/build-host/tests/Testing
     
     - name: Artifacts
       uses: actions/upload-artifact@v4
       with:
         name: build-output-${{ github.sha }}
-        path: build/build-host/tests/Testing/*.log
+        path: build/build-host/tests/Testing/Temporary/*.log
 
