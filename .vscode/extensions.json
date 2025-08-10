@@ -1,5 +1,6 @@
 {
     "recommendations": [
+        "vadimcn.vscode-lldb",
         "dan-c-underwood.arm",
         "marus25.cortex-debug",
         "trond-snekvik.gnu-mapfiles",

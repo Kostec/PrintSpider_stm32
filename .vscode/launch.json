@@ -32,61 +32,12 @@
             "postDebugTask": "Stop SWO"
         },
         {
-            "name": "Attach",
-            "type":"cortex-debug",
-            "cwd": "${workspaceRoot}",
-            "executable": "${command:cmake.launchTargetPath}",
-            "request": "attach",
-            "servertype": "openocd",
-            "gdbPath" : "arm-none-eabi-gdb",
-
-// ============== OpenOCD Config BEGIN ==============
-            "interface":"swd",
-            "configFiles": [
-                "${config:openOCD_CFG}"
-            ],
-            "serverArgs": [
-                "-s", "${config:openOCD_scripts}",
-                // "-c", "itm port 0 on",
-            ],
-// ============== OpenOCD Config END ==============
-
-            // Work around for stopping at main on restart
-            "postRestartCommands": [
-                "break main",
-                "continue"
-            ],
-            // "preLaunchTask": "SWO",
-        },
-        {
-            "name": "Attach and Stop",
-            "type":"cortex-debug",
-            "cwd": "${workspaceRoot}",
-            "executable": "${command:cmake.launchTargetPath}",
-            "request": "attach",
-            "servertype": "openocd",
-            "gdbPath" : "arm-none-eabi-gdb",
-
-// ============== OpenOCD Config BEGIN ==============
-            "interface":"swd",
-            "configFiles": [
-                "${config:openOCD_CFG}"
-            ],
-            "serverArgs": [
-                "-s", "${config:openOCD_scripts}",
-                "-c", "itm port 0 on",
-            ],
-// ============== OpenOCD Config END ==============
-        }
-        // {
-        //     "name": "Debug core_tests",
-        //     "type": "cppdbg",
-        //     "request": "launch",
-        //     "program": "${workspaceFolder}/build-host/tests/core_tests",
-        //     "args": [],
-        //     "cwd": "${workspaceFolder}/build/tests",
-        //     "MIMode": "gdb",
-        //     "miDebuggerPath": "gdb"
-        //   }
+            "name": "Debug Google Tests",
+            "type": "lldb",
+            "request": "launch",
+            "program": "${command:cmake.launchTargetPath}",
+            "args": [],
+            "cwd": "${workspaceFolder}",
+          }
     ]
 }
