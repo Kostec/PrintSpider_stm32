@@ -30,7 +30,7 @@ jobs:
         with:
           name: build-output-${{ github.sha }}
           path: |
-            ./build/*.bin
-            ./build/*.hex
-            ./build/*.elf
-            ./build/build-host/tests/Testing/*.log
+            build/*.bin
+            build/*.hex
+            build/*.elf
+            build/build-host/tests/Testing/*.log
