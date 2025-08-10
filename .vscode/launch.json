@@ -78,5 +78,15 @@
             ],
 // ============== OpenOCD Config END ==============
         }
+        // {
+        //     "name": "Debug core_tests",
+        //     "type": "cppdbg",
+        //     "request": "launch",
+        //     "program": "${workspaceFolder}/build-host/tests/core_tests",
+        //     "args": [],
+        //     "cwd": "${workspaceFolder}/build/tests",
+        //     "MIMode": "gdb",
+        //     "miDebuggerPath": "gdb"
+        //   }
     ]
 }

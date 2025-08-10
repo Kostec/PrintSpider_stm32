@@ -1,13 +1,7 @@
 name: STM32 CI
 
-env:
-  PROJECT_NAME: ${{ github.event.repository.name }}
-
 on:
-  push:
-    branches: [main]
-  pull_request:
-    branches: [main]
+  workflow_call:
 
 jobs:
   build:
@@ -42,15 +36,14 @@ jobs:
       
     - name: Build Firmvare
       run: |
-        mkdir build
-        cmake ./CMakeLists.txt -DCMAKE_BUILD_TYPE=Release -G Ninja -B ./build/Release
-        ninja -C ./build/Release
+        cmake --preset PrintSpider_stm32
+        cmake --build --preset build-fw
 
     - name: Artifacts
       uses: actions/upload-artifact@v4
       with:
-        name: ${{ env.PROJECT_NAME }}-${{ github.sha }}
+        name: build-output-${{ github.sha }}
         path: |
-          build/Release/*.bin
-          build/Release/*.hex
-          build/Release/*.elf
+          build/*.bin
+          build/*.hex
+          build/*.elf

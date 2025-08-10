@@ -1,3 +1,4 @@
+#ifdef ENABLE_SYSCALLS
 /**
  ******************************************************************************
  * @file      syscalls.c
@@ -22,7 +23,7 @@
 
 /* Includes */
 #include <sys/stat.h>
-#include <stdlib.h>
+// #include <stdlib.h>
 #include <errno.h>
 #include <stdio.h>
 #include <signal.h>
@@ -174,3 +175,5 @@ int _execve(char *name, char **argv, char **env)
   errno = ENOMEM;
   return -1;
 }
+
+#endif //ENABLE_SYSCALLS
