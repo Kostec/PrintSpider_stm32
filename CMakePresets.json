@@ -5,7 +5,7 @@
             "name": "PrintSpider_stm32",
             "displayName": "PrintSpider_stm32",
             "description": "STM32 toolchain",
-            "binaryDir": "${sourceDir}/Debug",
+            "binaryDir": "${sourceDir}/build/${CMAKE_BUILD_TYPE}",
             "generator": "Ninja",
             "toolchainFile": "${sourceDir}/cmake/toolchains/stm32-toolchain.cmake",
             "cacheVariables": {
