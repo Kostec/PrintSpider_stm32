@@ -31,6 +31,8 @@
   #define __LDREXW(...) 0
   #define __STREXW(...) 0
 
+  #define __RAM_FUNC
+
 
 #endif //__CMSIS_COMPILER_MOCK_H
 

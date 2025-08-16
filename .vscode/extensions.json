@@ -5,11 +5,13 @@
         "marus25.cortex-debug",
         "trond-snekvik.gnu-mapfiles",
         "mcu-debug.memory-view",
+        "ms-vscode.vscode-embedded-tools",
         "twxs.cmake",
         "josetr.cmake-language-support-vscode",
         "ms-vscode.cmake-tools",
         "ms-vscode.cpptools",
         "ms-vscode.cpptools-extension-pack",
         "ms-vscode.cpptools-themes"
+        "awsxxf.serialterminal"
     ]
 }
