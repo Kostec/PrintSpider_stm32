@@ -21,25 +21,25 @@ limitations under the License.
 #include <Print/printspider.h>
 #include <Print/print.h>
 #include <stdio.h>
-#include <stm32f4xx_hal_gpio.h>
+#include "stm32f4xx_hal.h"
 
 
 #define WAVEFORM_LEN 600
 
 // GPIO numbers for the lines that are connected (via level converters) to the
 // printer cartridge.
-#define PIN_NUM_CART_D1 { GPIOA, GPIO_PIN_1 }  // 0
-#define PIN_NUM_CART_D2 { GPIOA, GPIO_PIN_2 }  // 1
-#define PIN_NUM_CART_D3 { GPIOA, GPIO_PIN_3 }  // 2
-#define PIN_NUM_CART_CSYNC { GPIOA, GPIO_PIN_4 }  // 3
+#define PIN_NUM_CART_D1 { GPIOC, GPIO_PIN_1 }  // 0
+#define PIN_NUM_CART_D2 { GPIOC, GPIO_PIN_2 }  // 1
+#define PIN_NUM_CART_D3 { GPIOC, GPIO_PIN_3 }  // 2
+#define PIN_NUM_CART_CSYNC { GPIOA, GPIO_PIN_7 }  // 3
 #define PIN_NUM_CART_S1 { GPIOC, GPIO_PIN_4 }  // 4
-#define PIN_NUM_CART_S2 { GPIOB, GPIO_PIN_0 }  // 5
-#define PIN_NUM_CART_S3 { GPIOB, GPIO_PIN_1 }  // 6
-#define PIN_NUM_CART_S4 { GPIOB, GPIO_PIN_2 }  // 7
-#define PIN_NUM_CART_S5 { GPIOB, GPIO_PIN_10 }  // 8
-#define PIN_NUM_CART_DCLK { GPIOB, GPIO_PIN_12 }  // 9
-#define PIN_NUM_CART_F3 { GPIOB, GPIO_PIN_13 }  // 10
-#define PIN_NUM_CART_F5 { GPIOB, GPIO_PIN_14 }  // 11
+#define PIN_NUM_CART_S2 { GPIOC, GPIO_PIN_5 }  // 5
+#define PIN_NUM_CART_S3 { GPIOB, GPIO_PIN_0 }  // 6
+#define PIN_NUM_CART_S4 { GPIOB, GPIO_PIN_1 }  // 7
+#define PIN_NUM_CART_S5 { GPIOB, GPIO_PIN_2 }  // 8
+#define PIN_NUM_CART_DCLK { GPIOB, GPIO_PIN_10 }  // 9
+#define PIN_NUM_CART_F3 { GPIOB, GPIO_PIN_12 }  // 10
+#define PIN_NUM_CART_F5 { GPIOB, GPIO_PIN_13 }  // 11
 
 typedef struct gpio_pin_t {
     GPIO_TypeDef* port;
@@ -104,6 +104,7 @@ static printspider_waveform_desc_t selected_waveform;
 void digitalWrite(int pin, int state)
 {
     // TODO
+    // printf("%s: pin=%d state=%d\r\n", __FUNCTION__, pin, state);
     HAL_GPIO_WritePin(gpio_bus[pin].port, gpio_bus[pin].pin, state);
 }
 
@@ -264,6 +265,7 @@ static void select_waveform() {
 }
 
 void PRINT_print(void) {
+    printf("%s\r\n", __FUNCTION__);
 #ifdef PRINT_COLOR
     color_image_part_t color_part;
     color_image_part_t *color_part_adr = &color_part;
@@ -282,6 +284,7 @@ void PRINT_print(void) {
 }
 
 void PRINT_setup(void) {
+    printf("%s\r\n", __FUNCTION__);
     setup_gpio();
     select_waveform();
 }

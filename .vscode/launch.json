@@ -9,6 +9,8 @@
             "request": "launch",
             "servertype": "openocd",
             "gdbPath" : "arm-none-eabi-gdb",
+            "svdPath": "STM32F411.svd",
+            "svdFile": "STM32F411.svd",
 
 // ============== OpenOCD Config BEGIN ==============
             "interface": "swd",
@@ -17,7 +19,7 @@
             ],
             "serverArgs": [
                 "-s", "${config:openOCD_scripts}",
-                "-c", "itm port 0 on",
+                // "-c", "itm port 0 on",
             ],
             // ============== OpenOCD Config END ==============
 
@@ -28,8 +30,8 @@
                 "continue"
             ],
             // Work around for debugging via SWO
-            "preLaunchTask": "SWO",
-            "postDebugTask": "Stop SWO"
+            // "preLaunchTask": "SWO",
+            // "postDebugTask": "Stop SWO"
         },
         {
             "name": "Debug Google Tests",

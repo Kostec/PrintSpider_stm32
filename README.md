@@ -1,18 +1,19 @@
 ## Summary
-This project is attempts to control printer cartridge H123 with STM32F411RE MCU.
+This project is attempts to control printer cartridge H123 with STM32F411RE-Nucleo board.
 
 ## Based On
 - [PrintSpider](https://github.com/lichnost/PrintSpider_Arduino) - PrintSpider implementation for Arduino.
 - [SMT32F411RE template](https://github.com/Kostec/test_411RE) with support CubeIDE and VS Code Cmake development.
+- ["HP printer cartridge control module"](https://hackaday.io/project/176931-hp-printer-cartridge-control-module/details) hackaday article
 
 ## Required Tools
 To initialize the project, you I have used the following tools:
 1. Cmake (3.20)
 2. Cube IDE (1.19)
-3. OpenOCD (0.12 from Cube IDE if you want to debug)
+3. OpenOCD (0.12 from Cube IDE if you want use SWO debug)
 4. GNU ARM Toolchain (14.3)
 5. VS Code (1.99.3)
-6. Plink (0.81)
+6. Plink (0.81) (if SWO debug)
 7. LLVM (19.0)
 
 ## How To Debug and Develop

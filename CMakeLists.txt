@@ -20,6 +20,7 @@ set (LINKER_SCRIPT            "${CMAKE_CURRENT_LIST_DIR}/STM32F411RETX_FLASH.ld"
 set(CMAKE_TRY_COMPILE_TARGET_TYPE STATIC_LIBRARY)
 
 set(CORE_SOURCES
+    # CORE FEATURES
     Core/Src/Print/printspider.c
     Core/Src/Print/print.c
 )
@@ -28,9 +29,8 @@ file(GLOB_RECURSE SOURCES
     Drivers/STM32F4xx_HAL_Driver/Src/*.*
     Core/Src/*.*
 )
-
 set (PROJECT_SOURCES
-	# LIST SOURCE FILES HERE
+    # LIST OF ALL PROJECT FILE SOURCES
 	Core/Startup/startup_stm32f411retx.s
 	${SOURCES}
 	)
@@ -40,7 +40,9 @@ set (PROJECT_DEFINES
     STM32F411xE
     )
 
-set (CORE_INCLUDES Core/Inc Drivers/CMSIS/Device/ST/STM32F4xx/Include)
+set (CORE_INCLUDES 
+    Core/Inc Drivers/CMSIS/Device/ST/STM32F4xx/Include
+)
 
 set (PROJECT_INCLUDES
 	# LIST INCLUDE DIRECTORIES HERE
@@ -50,43 +52,72 @@ set (PROJECT_INCLUDES
     Drivers/CMSIS/Device/ST/STM32F4xx/Include
     )
 
+file(GLOB_RECURSE SOURCES
+    Drivers/STM32F4xx_HAL_Driver/Src/*.*
+    Core/Src/*.*
+)
+
+set (FREE_RTOS_INCLUDES
+    Middlewares/Third_Party/FreeRTOS/Source/include
+    Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
+    Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
+)
+
+file(GLOB_RECURSE FREE_RTOS_SOURCES
+    Middlewares/Third_Party/FreeRTOS/*.*
+)
+
+set(MIDDLEWARE_INCLUDES
+    ${FREE_RTOS_INCLUDES}
+)
+
+set(MIDDLEWARE_SOURCES
+    ${FREE_RTOS_SOURCES}
+)
+
+set(MCU_FLAGS
+    -mcpu=cortex-m4
+    -mthumb
+    -mfpu=fpv4-sp-d16
+    -mfloat-abi=softfp
+)
 ################## PROJECT SETUP ######################################
 project(${PROJECT_NAME} C CXX ASM)
 enable_language(ASM)
-
-set (CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
+set(CMAKE_ASM_FLAGS "${CMAKE_C_FLAGS} -x assembler-with-cpp")
 # Tests definition
 message(STATUS BUILD_TESTS=${BUILD_TESTS} CMAKE_CROSSCOMPILING=${CMAKE_CROSSCOMPILING})
 if(BUILD_TESTS)
     message(STATUS "Configure Tests")
-
     add_compile_definitions(${PROJECT_DEFINES})    
     LIST(REMOVE_ITEM ${SOURCES} D:/Projects/STM32CubeIDE/PrintSpider_stm32/Core/Src/syscalls.c)
     add_library(core_lib STATIC ${SOURCES})
-    target_include_directories(core_lib PUBLIC ${PROJECT_INCLUDES})
-
-    include(FetchContent)
-    set(gtest_disable_pthreads ON CACHE BOOL "" FORCE)
-    FetchContent_Declare(
-        googletest
-        GIT_REPOSITORY https://github.com/google/googletest.git
-        GIT_TAG        v1.17.0
+    target_include_directories(core_lib PUBLIC 
+        ${PROJECT_INCLUDES}
+        ${MIDDLEWARE_INCLUDES}
     )
-    FetchContent_MakeAvailable(googletest)
-    enable_testing()
+
     message(STATUS "add_subdirectory(tests)")
     add_subdirectory(tests)
 else()
     message(STATUS "Configure Firmware")
+    add_compile_options(${MCU_FLAGS})
     add_compile_definitions(ENABLE_SYSCALLS)
-    add_executable(${PROJECT_NAME} ${PROJECT_SOURCES} ${GLOB_RECURSE})
+    add_executable(${PROJECT_NAME}
+        ${PROJECT_SOURCES}
+        ${GLOB_RECURSE}
+        ${MIDDLEWARE_SOURCES}
+    )
 
     add_custom_command(TARGET ${PROJECT_NAME}   POST_BUILD
                     COMMAND arm-none-eabi-size $<TARGET_FILE:${PROJECT_NAME}>
     )
 
-    add_compile_definitions (${PROJECT_DEFINES})
-    include_directories (${PROJECT_INCLUDES})
+    add_compile_definitions(${PROJECT_DEFINES})
+    include_directories (
+        ${PROJECT_INCLUDES}
+        ${MIDDLEWARE_INCLUDES}
+    )
 
     set (CMAKE_EXECUTABLE_SUFFIX ".elf")
     set (CMAKE_STATIC_LIBRARY_SUFFIX ".a")

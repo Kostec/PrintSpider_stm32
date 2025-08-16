@@ -33,7 +33,7 @@ set(MOCKED_HEADERS_GLOBAL
 enable_testing()
 include(CTest)
 include(FetchContent)
-# google test verison 1.17.0 for now 52eb8108c5bdec04579160ae17225d66034bd723
+set(gtest_disable_pthreads ON CACHE BOOL "" FORCE)
 
 FetchContent_Declare(
         googletest

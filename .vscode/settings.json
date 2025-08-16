@@ -19,7 +19,10 @@
         "stm32f4xx_hal_conf.h": "c",
         "core_cm4.h": "c",
         "stdint.h": "c",
-        "cmsis_compiler.h": "c"
+        "cmsis_compiler.h": "c",
+        "print.h": "c",
+        "cmsis_os.h": "c",
+        "freertos.h": "c"
     },
 
     "cmake.buildDirectory": "build/",
