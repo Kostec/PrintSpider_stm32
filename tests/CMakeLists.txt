@@ -12,23 +12,14 @@ set(CMAKE_CXX_STANDARD 17)
 set(CMAKE_CXX_STANDARD_REQUIRED ON)
 
 message(STATUS WIN32=${WIN32})
-message(STATUS CMSIS_SIMULATION=${CMSIS_SIMULATION})
 remove_definitions(__GNUC__)
-
-# if (WIN32)
-#   target_compile_definitions(core_tests PRIVATE
-#     GTEST_HAS_PTHREAD=0
-#   )
-# endif()
 
 # Define global directory
 set(TEST_TARGET_DIRECTORY ${CMAKE_CURRENT_LIST_DIR}/..)
 
 #define mocks directory
 set(GLOBAL_MOCK_DIR ${CMAKE_CURRENT_LIST_DIR}/mock)
-set(MOCKED_HEADERS_GLOBAL 
-    ${GLOBAL_MOCK_DIR}
-)
+set(MOCKED_HEADERS_GLOBAL  ${GLOBAL_MOCK_DIR})
 
 enable_testing()
 include(CTest)
@@ -56,7 +47,6 @@ set(TEST_SOURCE_DIRECTORY ${CMAKE_BINARY_DIR}/build/tests)
 
 set(TEST_MAIN ${CMAKE_CURRENT_LIST_DIR}/test_main.cpp)
 add_subdirectory("Core/Print")
-message(STATUS "=== AFTER add_subdirectory ===")
 
 set(TARGET_INCLUDE_DIRECTORY)
 set(TARGET_SOURCES  )
