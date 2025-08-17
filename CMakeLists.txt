@@ -23,6 +23,7 @@ set(CORE_SOURCES
     # CORE FEATURES
     Core/Src/Print/printspider.c
     Core/Src/Print/print.c
+    Core/Src/LED/ws2812.c
 )
 
 file(GLOB_RECURSE SOURCES
@@ -47,6 +48,8 @@ set (CORE_INCLUDES
 set (PROJECT_INCLUDES
 	# LIST INCLUDE DIRECTORIES HERE
     Core/Inc
+    Core/Inc/LED
+    Core/Inc/Print
     Drivers/STM32F4xx_HAL_Driver/Inc
     Drivers/CMSIS/Include
     Drivers/CMSIS/Device/ST/STM32F4xx/Include
@@ -59,7 +62,7 @@ file(GLOB_RECURSE SOURCES
 
 set (FREE_RTOS_INCLUDES
     Middlewares/Third_Party/FreeRTOS/Source/include
-    Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS
+    Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
     Middlewares/Third_Party/FreeRTOS/Source/portable/GCC/ARM_CM4F
 )
 

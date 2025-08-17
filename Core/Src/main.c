@@ -23,7 +23,10 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 #include <stdio.h>
+#include <string.h>
+#include "semphr.h"
 #include <Print/print.h>
+#include <LED/ws2812.h>
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -50,10 +53,21 @@ UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_usart2_tx;
 
-osThreadId defaultTaskHandle;
-osThreadId printTaskHandle;
+/* Definitions for defaultTask */
+osThreadId_t defaultTaskHandle;
+const osThreadAttr_t defaultTask_attributes = {
+  .name = "defaultTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
+/* Definitions for printTask */
+osThreadId_t printTaskHandle;
+const osThreadAttr_t printTask_attributes = {
+  .name = "printTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityNormal,
+};
 /* USER CODE BEGIN PV */
-
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -64,8 +78,8 @@ static void MX_I2C1_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART6_UART_Init(void);
-void StartDefaultTask(void const * argument);
-void StartPrintTask02(void const * argument);
+void StartDefaultTask(void *argument);
+void StartPrintTask02(void *argument);
 
 /* USER CODE BEGIN PFP */
 int _write(int file, char *ptr, int len) {
@@ -118,6 +132,9 @@ int main(void)
   printf("Init RTOS\r\n"); 
   /* USER CODE END 2 */
 
+  /* Init scheduler */
+  osKernelInitialize();
+
   /* USER CODE BEGIN RTOS_MUTEX */
   printf("USER RTOS_MUTEX definitions\r\n");
   /* add mutexes, ... */
@@ -139,19 +156,21 @@ int main(void)
   /* USER CODE END RTOS_QUEUES */
 
   /* Create the thread(s) */
-  /* definition and creation of defaultTask */
-  osThreadDef(defaultTask, StartDefaultTask, osPriorityNormal, 0, 128);
-  defaultTaskHandle = osThreadCreate(osThread(defaultTask), NULL);
+  /* creation of defaultTask */
+  defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* definition and creation of printTask */
-  osThreadDef(printTask, StartPrintTask02, osPriorityNormal, 0, 128);
-  printTaskHandle = osThreadCreate(osThread(printTask), NULL);
+  /* creation of printTask */
+  printTaskHandle = osThreadNew(StartPrintTask02, NULL, &printTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   printf("USER BEGIN definitions\r\n");
   /* add threads, ... */
   printf("Start scheduler\r\n");
   /* USER CODE END RTOS_THREADS */
+
+  /* USER CODE BEGIN RTOS_EVENTS */
+  /* add events, ... */
+  /* USER CODE END RTOS_EVENTS */
 
   /* Start scheduler */
   osKernelStart();
@@ -433,7 +452,7 @@ static void MX_GPIO_Init(void)
   * @retval None
   */
 /* USER CODE END Header_StartDefaultTask */
-void StartDefaultTask(void const * argument)
+void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
@@ -451,13 +470,13 @@ void StartDefaultTask(void const * argument)
 * @retval None
 */
 /* USER CODE END Header_StartPrintTask02 */
-void StartPrintTask02(void const * argument)
+void StartPrintTask02(void *argument)
 {
   /* USER CODE BEGIN StartPrintTask02 */
   /* Infinite loop */
   for(;;)
   {
-    printf("TogglePin\r\n");
+    // printf("TogglePin\r\n");
     HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
     PRINT_setup();
     PRINT_print();
