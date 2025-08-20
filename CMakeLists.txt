@@ -29,6 +29,7 @@ set(CORE_SOURCES
 file(GLOB_RECURSE SOURCES
     Drivers/STM32F4xx_HAL_Driver/Src/*.*
     Core/Src/*.*
+    FATFS/*.*
 )
 set (PROJECT_SOURCES
     # LIST OF ALL PROJECT FILE SOURCES
@@ -48,18 +49,23 @@ set (CORE_INCLUDES
 set (PROJECT_INCLUDES
 	# LIST INCLUDE DIRECTORIES HERE
     Core/Inc
+    Core/Inc/SD
     Core/Inc/LED
+    Core/Inc/LOG
     Core/Inc/Print
     Drivers/STM32F4xx_HAL_Driver/Inc
     Drivers/CMSIS/Include
     Drivers/CMSIS/Device/ST/STM32F4xx/Include
-    )
+
+    FATFS/App
+    FATFS/Target
+)
 
 file(GLOB_RECURSE SOURCES
     Drivers/STM32F4xx_HAL_Driver/Src/*.*
     Core/Src/*.*
 )
-
+# ==============================MIDDLEWARE BEGIN==============================
 set (FREE_RTOS_INCLUDES
     Middlewares/Third_Party/FreeRTOS/Source/include
     Middlewares/Third_Party/FreeRTOS/Source/CMSIS_RTOS_V2
@@ -70,13 +76,24 @@ file(GLOB_RECURSE FREE_RTOS_SOURCES
     Middlewares/Third_Party/FreeRTOS/*.*
 )
 
+set (FatFs_MIDDLEWARE_INCLUDES
+    Middlewares/Third_Party/FatFs/src
+)
+
+file(GLOB_RECURSE FatFs_MIDDLEWARE_SOURCES
+    Middlewares/Third_Party/FatFs/src/*.*
+)
+
 set(MIDDLEWARE_INCLUDES
     ${FREE_RTOS_INCLUDES}
+    ${FatFs_MIDDLEWARE_INCLUDES}
 )
 
 set(MIDDLEWARE_SOURCES
     ${FREE_RTOS_SOURCES}
+    ${FatFs_MIDDLEWARE_SOURCES}
 )
+# ==============================MIDDLEWARE END==============================
 
 set(MCU_FLAGS
     -mcpu=cortex-m4
@@ -113,7 +130,7 @@ else()
     )
 
     add_custom_command(TARGET ${PROJECT_NAME}   POST_BUILD
-                    COMMAND arm-none-eabi-size $<TARGET_FILE:${PROJECT_NAME}>
+                    COMMAND arm-none-eabi-size --format=berkeley $<TARGET_FILE:${PROJECT_NAME}>
     )
 
     add_compile_definitions(${PROJECT_DEFINES})

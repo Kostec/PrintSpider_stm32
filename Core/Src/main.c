@@ -19,14 +19,15 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "cmsis_os.h"
+#include "fatfs.h"
 
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
-#include <stdio.h>
 #include <string.h>
 #include "semphr.h"
 #include <Print/print.h>
 #include <LED/ws2812.h>
+#include "LOG/LOG.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -48,6 +49,8 @@
 I2C_HandleTypeDef hi2c1;
 
 SPI_HandleTypeDef hspi3;
+DMA_HandleTypeDef hdma_spi3_rx;
+DMA_HandleTypeDef hdma_spi3_tx;
 
 UART_HandleTypeDef huart2;
 UART_HandleTypeDef huart6;
@@ -67,7 +70,13 @@ const osThreadAttr_t printTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for spi3_sem */
+osSemaphoreId_t spi3_semHandle;
+const osSemaphoreAttr_t spi3_sem_attributes = {
+  .name = "spi3_sem"
+};
 /* USER CODE BEGIN PV */
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -75,9 +84,9 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_I2C1_Init(void);
-static void MX_SPI3_Init(void);
 static void MX_USART2_UART_Init(void);
 static void MX_USART6_UART_Init(void);
+static void MX_SPI3_Init(void);
 void StartDefaultTask(void *argument);
 void StartPrintTask02(void *argument);
 
@@ -86,6 +95,39 @@ int _write(int file, char *ptr, int len) {
   HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, HAL_MAX_DELAY);
   return len;
 }
+
+//==============================MicroSD BEGIN==============================
+#define SD_CS_LOW()  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET)
+#define SD_CS_HIGH() HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET)
+
+void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    BaseType_t xHigherPriorityWoken = pdFALSE;
+    if (hspi == &hspi3) 
+    {
+      xSemaphoreGiveFromISR(spi3_semHandle, &xHigherPriorityWoken);
+      portYIELD_FROM_ISR(xHigherPriorityWoken);
+    }
+}
+
+HAL_StatusTypeDef SPI3_TransmitReceive_DMA(uint8_t *txBuf, uint8_t *rxBuf, uint16_t len, uint32_t timeout) {
+  SD_CS_LOW();
+
+  if (HAL_SPI_TransmitReceive_DMA(&hspi3, txBuf, rxBuf, len) != HAL_OK) {
+      SD_CS_HIGH();
+      return HAL_ERROR;
+  }
+
+  // Wait DMA finish
+  if (osSemaphoreAcquire(spi3_semHandle, timeout) != osOK) {
+      SD_CS_HIGH();
+      return HAL_TIMEOUT;
+  }
+
+  SD_CS_HIGH();
+  return HAL_OK;
+}
+//==============================MicroSD END==============================
 
 /* USER CODE END PFP */
 
@@ -118,40 +160,45 @@ int main(void)
   SystemClock_Config();
 
   /* USER CODE BEGIN SysInit */
-
   /* USER CODE END SysInit */
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_I2C1_Init();
-  MX_SPI3_Init();
   MX_USART2_UART_Init();
   MX_USART6_UART_Init();
+  MX_SPI3_Init();
+  MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
-  printf("Init RTOS\r\n"); 
+  LOG_SetLogLevel(LOG_enLogLevelTrace);
+  LOG_Debug("Init RTOS");; 
   /* USER CODE END 2 */
 
   /* Init scheduler */
   osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
-  printf("USER RTOS_MUTEX definitions\r\n");
+  LOG_Debug("USER RTOS_MUTEX definitions");
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
+  /* Create the semaphores(s) */
+  /* creation of spi3_sem */
+  spi3_semHandle = osSemaphoreNew(1, 0, &spi3_sem_attributes);
+
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  printf("USER RTOS_SEMAPHORES definitions\r\n");
+  LOG_Debug("USER RTOS_SEMAPHORES definitions");
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
-  printf("USER RTOS_TIMERS definitions\r\n");
+  LOG_Debug("USER RTOS_TIMERS definitions");
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-  printf("USER RTOS_QUEUES definitions\r\n");
+  LOG_Debug("USER RTOS_QUEUES definitions");
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
@@ -163,9 +210,9 @@ int main(void)
   printTaskHandle = osThreadNew(StartPrintTask02, NULL, &printTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  printf("USER BEGIN definitions\r\n");
+  LOG_Debug("USER BEGIN definitions");
   /* add threads, ... */
-  printf("Start scheduler\r\n");
+  LOG_Debug("Start scheduler");
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -377,6 +424,12 @@ static void MX_DMA_Init(void)
   __HAL_RCC_DMA1_CLK_ENABLE();
 
   /* DMA interrupt init */
+  /* DMA1_Stream0_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+  /* DMA1_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
   /* DMA1_Stream6_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream6_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream6_IRQn);
@@ -399,6 +452,7 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
+  __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOC, GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_3|GPIO_PIN_4
@@ -410,6 +464,9 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(GPIOB, GPIO_PIN_0|GPIO_PIN_1|GPIO_PIN_2|GPIO_PIN_10
                           |GPIO_PIN_12|GPIO_PIN_13, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(SPI3_CS_SD_GPIO_Port, SPI3_CS_SD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pins : PC1 PC2 PC3 PC4
                            PC5 */
@@ -436,6 +493,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
+  /*Configure GPIO pin : SPI3_CS_SD_Pin */
+  GPIO_InitStruct.Pin = SPI3_CS_SD_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
+  HAL_GPIO_Init(SPI3_CS_SD_GPIO_Port, &GPIO_InitStruct);
+
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
   /* USER CODE END MX_GPIO_Init_2 */
@@ -455,10 +519,36 @@ static void MX_GPIO_Init(void)
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
+  char SDPath[] = "0:/";
+  uint8_t mounted = 0;
   /* Infinite loop */
   for(;;)
   {
-    osDelay(1);
+    if (!mounted)
+    {
+      if (f_mount(&USERFatFS, SDPath, 1) != FR_OK)
+      {
+        LOG_Error("%s: SD card not found", __FUNCTION__);
+      }
+      else
+      {
+        LOG_Debug("%s: SD card is available", __FUNCTION__);
+        mounted = 1;
+      }
+    }
+    else
+    {
+      DIR dir;
+      FILINFO fno;
+      FRESULT res = f_opendir(&dir, SDPath);
+      if (res == FR_OK) {
+          while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0]) {
+            LOG_Debug("%s: filename=%s", __FUNCTION__, fno.fname);
+          }
+          f_closedir(&dir);
+      }
+    }
+    osDelay(5000);
   }
   /* USER CODE END 5 */
 }
@@ -476,11 +566,11 @@ void StartPrintTask02(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    // printf("TogglePin\r\n");
-    HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
-    PRINT_setup();
-    PRINT_print();
-    osDelay(1000);
+    // LOG_Debug("TogglePin");
+    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    // PRINT_setup();
+    // PRINT_print();
+    osDelay(100000);
   }
   /* USER CODE END StartPrintTask02 */
 }
@@ -514,6 +604,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
+  LOG_Error("%s", __FUNCTION__);
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
   while (1)
