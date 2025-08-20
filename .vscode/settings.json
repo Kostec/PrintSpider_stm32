@@ -22,7 +22,11 @@
         "cmsis_compiler.h": "c",
         "print.h": "c",
         "cmsis_os.h": "c",
-        "freertos.h": "c"
+        "freertos.h": "c",
+        "main.h": "c",
+        "fatfs.h": "c",
+        "cstdio": "cpp",
+        "ws2812.h": "c"
     },
 
     "cmake.buildDirectory": "build/",
