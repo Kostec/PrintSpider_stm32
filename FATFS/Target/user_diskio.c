@@ -38,7 +38,8 @@
 #include "cmsis_os.h"
 #include "semphr.h"
 
-#include "SD.h"
+// #include "SD.h"
+#include "user_diskio_spi.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
@@ -89,24 +90,7 @@ DSTATUS USER_initialize (
 )
 {
   /* USER CODE BEGIN INIT */
-  if (pdrv != 0) return STA_NOINIT;
-  // if (spiDmaSem == NULL) {
-  //     spiDmaSem = xSemaphoreCreateBinary();
-  //     if (spiDmaSem == NULL) return STA_NOINIT;
-  // }
-  // Calls on HAL_SPI_INIT
-  // HAL_SPI_MspInit(&hspi3);
-  // HAL_SPI_Init(&hspi3);
-  
-  
-  // Hardware-specific: питание карты, CMD0/CMD8/ACMD41 и т.д.
-  // Не требуется?
-  // if (SD_CardInitViaSPI_DMA() == HAL_OK) {
-  //     Card_Initialized = 1;
-  //     return STA_OK;
-  // }
-  Stat = 0;
-  return RES_OK;
+  return USER_SPI_initialize(pdrv);
   /* USER CODE END INIT */
 }
 
@@ -120,7 +104,7 @@ DSTATUS USER_status (
 )
 {
   /* USER CODE BEGIN STATUS */
-    return Stat;
+  return USER_SPI_status(pdrv);
   /* USER CODE END STATUS */
 }
 
@@ -140,26 +124,7 @@ DRESULT USER_read (
 )
 {
   /* USER CODE BEGIN READ */
-  if (pdrv != 0 || buff == NULL || count == 0)
-  {
-    return RES_PARERR;
-  }
-  if (USER_status(pdrv) != 0)
-  {
-    return RES_NOTRDY;
-  }
-
-    for (UINT i = 0; i < count; i++) {
-        if (SD_ReadSector_DMA(sector + i, buff + 512U * i) != HAL_OK) {
-            return RES_ERROR;
-        }
-        // Ждём окончания передачи
-        if (xSemaphoreTake(spi3_semHandle, pdMS_TO_TICKS(100)) != pdTRUE) {
-            return RES_ERROR;
-        }
-    }
-
-  return RES_OK;
+  return USER_SPI_read(pdrv, buff, sector, count);return RES_OK;
   /* USER CODE END READ */
 }
 
@@ -180,21 +145,7 @@ DRESULT USER_write (
 )
 {
   /* USER CODE BEGIN WRITE */
-  if (pdrv != 0 || buff == NULL || count == 0)       return RES_PARERR;
-  if (USER_status(pdrv) != 0)
-  {
-    return RES_NOTRDY;
-  }
-
-  for (UINT i = 0; i < count; i++) {
-      if (SD_WriteSector_DMA(sector + i, (uint8_t*)(buff + 512U * i)) != HAL_OK) {
-          return RES_ERROR;
-      }
-      if (xSemaphoreTake(spi3_semHandle, pdMS_TO_TICKS(100)) != pdTRUE) {
-          return RES_ERROR;
-      }
-  }
-  return RES_OK;
+  return USER_SPI_write(pdrv, buff, sector, count);
   /* USER CODE END WRITE */
 }
 #endif /* _USE_WRITE == 1 */
@@ -214,35 +165,7 @@ DRESULT USER_ioctl (
 )
 {
   /* USER CODE BEGIN IOCTL */
-    DRESULT res = RES_ERROR;
-    if (pdrv != 0 || buff == NULL) return RES_PARERR;
-
-    switch (cmd) {
-        case CTRL_SYNC:
-            // дожидаемся завершения всех операций
-            res = RES_OK;
-            break;
-
-        case GET_SECTOR_COUNT:
-            *(DWORD*)buff = SD_GetSectorCount();
-            res = RES_OK;
-            break;
-
-        case GET_SECTOR_SIZE:
-            *(WORD*)buff = 512;
-            res = RES_OK;
-            break;
-
-        case GET_BLOCK_SIZE:
-            *(DWORD*)buff = SD_GetEraseBlockSize();
-            res = RES_OK;
-            break;
-
-        default:
-          res = RES_PARERR;
-          break;
-    }
-    return res;
+  return USER_SPI_ioctl(pdrv, cmd, buff);
   /* USER CODE END IOCTL */
 }
 #endif /* _USE_IOCTL == 1 */
