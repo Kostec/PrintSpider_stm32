@@ -46,7 +46,7 @@ extern "C" {
 
 /* Exported macro ------------------------------------------------------------*/
 /* USER CODE BEGIN EM */
-
+#define SD_SPI_HANDLE hspi3
 /* USER CODE END EM */
 
 /* Exported functions prototypes ---------------------------------------------*/

@@ -77,6 +77,11 @@ const osSemaphoreAttr_t spi3_sem_attributes = {
 };
 /* USER CODE BEGIN PV */
 
+osSemaphoreId_t uart2_semHandle;
+const osSemaphoreAttr_t uart2_sem_attributes = {
+  .name = "uart2_sem"
+};
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -92,13 +97,44 @@ void StartPrintTask02(void *argument);
 
 /* USER CODE BEGIN PFP */
 int _write(int file, char *ptr, int len) {
+  // xSemaphoreTake( uart2_semHandle, portMAX_DELAY );
   HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, HAL_MAX_DELAY);
   return len;
+}
+
+void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart)
+{
+  // BaseType_t xHigherPriorityWoken = pdFALSE;
+  //   if (huart == &huart2) 
+  //   {
+  //     xSemaphoreGiveFromISR(uart2_semHandle, &xHigherPriorityWoken);
+  //     portYIELD_FROM_ISR(xHigherPriorityWoken);
+  //   }
 }
 
 //==============================MicroSD BEGIN==============================
 #define SD_CS_LOW()  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET)
 #define SD_CS_HIGH() HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET)
+
+void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    BaseType_t xHigherPriorityWoken = pdFALSE;
+    if (hspi == &hspi3) 
+    {
+      xSemaphoreGiveFromISR(spi3_semHandle, &xHigherPriorityWoken);
+      portYIELD_FROM_ISR(xHigherPriorityWoken);
+    }
+}
+
+void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
+{
+    BaseType_t xHigherPriorityWoken = pdFALSE;
+    if (hspi == &hspi3) 
+    {
+      xSemaphoreGiveFromISR(spi3_semHandle, &xHigherPriorityWoken);
+      portYIELD_FROM_ISR(xHigherPriorityWoken);
+    }
+}
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
@@ -109,6 +145,47 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
       portYIELD_FROM_ISR(xHigherPriorityWoken);
     }
 }
+
+HAL_StatusTypeDef SPI3_Transmit_DMA(uint8_t *txBuf, uint16_t len)
+{
+  SD_CS_LOW();
+  if (HAL_SPI_Transmit_DMA(&hspi3, txBuf, len) != HAL_OK)
+  {
+    SD_CS_LOW();
+    return HAL_ERROR;
+  }
+
+  // Wait DMA finish
+  if (osSemaphoreAcquire(spi3_semHandle, osWaitForever) != osOK) 
+  {
+    SD_CS_HIGH();
+    return HAL_TIMEOUT;
+  }
+
+  SD_CS_HIGH();
+  return HAL_OK;
+}
+
+HAL_StatusTypeDef SPI3_Receive_DMA(uint8_t *txBuf, uint16_t len)
+{
+  SD_CS_LOW();
+  if (HAL_SPI_Receive_DMA(&hspi3, txBuf, len) != HAL_OK)
+  {
+    SD_CS_LOW();
+    return HAL_ERROR;
+  }
+
+  // Wait DMA finish
+  if (osSemaphoreAcquire(spi3_semHandle, osWaitForever) != osOK) 
+  {
+    SD_CS_HIGH();
+    return HAL_TIMEOUT;
+  }
+
+  SD_CS_HIGH();
+  return HAL_OK;
+}
+
 
 HAL_StatusTypeDef SPI3_TransmitReceive_DMA(uint8_t *txBuf, uint8_t *rxBuf, uint16_t len, uint32_t timeout) {
   SD_CS_LOW();
@@ -172,7 +249,7 @@ int main(void)
   MX_FATFS_Init();
   /* USER CODE BEGIN 2 */
   LOG_SetLogLevel(LOG_enLogLevelTrace);
-  LOG_Debug("Init RTOS");; 
+  LOG_Debug("Init RTOS");
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -189,6 +266,7 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   LOG_Debug("USER RTOS_SEMAPHORES definitions");
+  uart2_semHandle = osSemaphoreNew(1, 0, &uart2_sem_attributes);
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 

@@ -1,5 +1,6 @@
 #include "SD.h"
 #include "semphr.h"
+#include "LOG.h"
 
 extern SPI_HandleTypeDef hspi3;
 extern osSemaphoreId_t spi3_semHandle;
@@ -41,7 +42,8 @@ static HAL_StatusTypeDef SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint
     // Посылаем пакет команды
     if (HAL_SPI_Transmit(&hspi3, buf, 6, 10) != HAL_OK)
     {
-        return HAL_ERROR;
+      // LOGError("%s: cmd=%u; arg=%lu;", __FUNCTION__, cmd, arg);
+      return HAL_ERROR;
     }
 
     // Ждём R1 (MSB=0)
@@ -53,6 +55,8 @@ static HAL_StatusTypeDef SD_SendCmd(uint8_t cmd, uint32_t arg, uint8_t crc, uint
             return HAL_OK;
         }
     }
+
+    // LOGError("%s: Timeout", __FUNCTION__);
     return HAL_TIMEOUT;
 }
 
@@ -68,6 +72,7 @@ static HAL_StatusTypeDef SD_WaitReady(uint32_t timeout)
         return HAL_OK;
     }
   } while ((HAL_GetTick() - tick) < timeout);
+  // LOGError("%s: timeout=%lu", __FUNCTION__, timeout);
   return HAL_TIMEOUT;
 }
 
@@ -83,6 +88,7 @@ static HAL_StatusTypeDef SD_WaitDataToken(uint8_t token, uint32_t timeout)
             return HAL_OK;
         }
     } while ((HAL_GetTick() - tick) < timeout);
+    // LOGError("%s: Timeout token=%u; timeout=%lu", __FUNCTION__, token, timeout);
     return HAL_TIMEOUT;
 }
 
@@ -96,6 +102,7 @@ HAL_StatusTypeDef SD_ReadSector_DMA(DWORD sector, uint8_t *buff)
     if (SD_SendCmd(17, arg, 0xFF, &r1) != HAL_OK || r1 != 0x00)
     {
         SD_CS_HIGH();
+        // LOGError("%s: Timeout sectod=%lu", __FUNCTION__, sector);
         return HAL_ERROR;
     }
 
@@ -103,6 +110,7 @@ HAL_StatusTypeDef SD_ReadSector_DMA(DWORD sector, uint8_t *buff)
     if (SD_WaitDataToken(0xFE, 100) != HAL_OK)
     {
         SD_CS_HIGH();
+        // LOGError("%s: 0xFE send timeout", __FUNCTION__);
         return HAL_TIMEOUT;
     }
 
@@ -112,6 +120,7 @@ HAL_StatusTypeDef SD_ReadSector_DMA(DWORD sector, uint8_t *buff)
     if (SD_DMA_TXRX(txFF, buff, 512) != HAL_OK)
     {
         SD_CS_HIGH();
+        // LOGError("%s: reading timeout", __FUNCTION__);
         return HAL_ERROR;
     }
 

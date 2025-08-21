@@ -26,7 +26,12 @@
         "main.h": "c",
         "fatfs.h": "c",
         "cstdio": "cpp",
-        "ws2812.h": "c"
+        "ws2812.h": "c",
+        "array": "c",
+        "span": "c",
+        "vector": "c",
+        "xstring": "c",
+        "xutility": "c"
     },
 
     "cmake.buildDirectory": "build/",
