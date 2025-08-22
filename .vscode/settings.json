@@ -32,7 +32,8 @@
         "vector": "c",
         "xstring": "c",
         "xutility": "c",
-        "string.h": "c"
+        "string.h": "c",
+        "log.h": "c"
     },
 
     "cmake.buildDirectory": "build/",

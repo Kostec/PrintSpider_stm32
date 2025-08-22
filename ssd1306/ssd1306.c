@@ -3,6 +3,7 @@
 #include <stdlib.h>
 #include <string.h>  // For memcpy
 #include "LOG/LOG.h"
+#include "cmsis_os.h"
 
 #if defined(SSD1306_USE_I2C)
 
@@ -78,7 +79,8 @@ void ssd1306_Init(void) {
     ssd1306_Reset();
 
     // Wait for the screen to boot
-    HAL_Delay(100);
+    // HAL_Delay(100);
+    osDelay(100);
 
     // Init OLED
     ssd1306_SetDisplayOn(0); //display off

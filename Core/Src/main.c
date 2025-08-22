@@ -107,21 +107,6 @@ void StartPrintTask02(void *argument);
 void StartDisplayTask(void *argument);
 
 /* USER CODE BEGIN PFP */
-int _write(int file, char *ptr, int len) {
-  // xSemaphoreTake( uart2_semHandle, portMAX_DELAY );
-  HAL_UART_Transmit(&huart2, (uint8_t*)ptr, len, HAL_MAX_DELAY);
-  return len;
-}
-
-void HAL_UART_TxCpltCallback(UART_HandleTypeDef* huart)
-{
-  // BaseType_t xHigherPriorityWoken = pdFALSE;
-  //   if (huart == &huart2) 
-  //   {
-  //     xSemaphoreGiveFromISR(uart2_semHandle, &xHigherPriorityWoken);
-  //     portYIELD_FROM_ISR(xHigherPriorityWoken);
-  //   }
-}
 
 //==============================MicroSD BEGIN==============================
 #define SD_CS_LOW()  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET)
@@ -259,15 +244,15 @@ int main(void)
   MX_FATFS_Init();
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
-  LOG_SetLogLevel(LOG_enLogLevelTrace);
-  LOG_Debug("Init RTOS");
+  LOG_Init();  
+  // LOG_Debug("Init RTOS");
   /* USER CODE END 2 */
 
   /* Init scheduler */
   osKernelInitialize();
 
   /* USER CODE BEGIN RTOS_MUTEX */
-  LOG_Debug("USER RTOS_MUTEX definitions");
+  // LOG_Debug("USER RTOS_MUTEX definitions");
   /* add mutexes, ... */
   /* USER CODE END RTOS_MUTEX */
 
@@ -276,18 +261,18 @@ int main(void)
   spi3_semHandle = osSemaphoreNew(1, 0, &spi3_sem_attributes);
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
-  LOG_Debug("USER RTOS_SEMAPHORES definitions");
+  // LOG_Debug("USER RTOS_SEMAPHORES definitions");
   uart2_semHandle = osSemaphoreNew(1, 0, &uart2_sem_attributes);
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
   /* USER CODE BEGIN RTOS_TIMERS */
-  LOG_Debug("USER RTOS_TIMERS definitions");
+  // LOG_Debug("USER RTOS_TIMERS definitions");
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
   /* USER CODE BEGIN RTOS_QUEUES */
-  LOG_Debug("USER RTOS_QUEUES definitions");
+  // LOG_Debug("USER RTOS_QUEUES definitions");
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
@@ -302,9 +287,9 @@ int main(void)
   DisplayTaskHandle = osThreadNew(StartDisplayTask, NULL, &DisplayTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
-  LOG_Debug("USER BEGIN definitions");
+  // LOG_Debug("USER BEGIN definitions");
   /* add threads, ... */
-  LOG_Debug("Start scheduler");
+  // LOG_Debug("Start scheduler");
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -612,7 +597,7 @@ void SD_loop()
     {
       if (f_mount(&USERFatFS, SDPath, 1) != FR_OK)
       {
-        LOG_Error("%s: SD card not found", __FUNCTION__);
+        LOG_Debug("%s: SD card not found", __FUNCTION__);
       }
       else
       {
@@ -649,6 +634,7 @@ void StartDefaultTask(void *argument)
   /* Infinite loop */
   for(;;)
   {
+    LOG_Debug("%s", __FUNCTION__);
     // SD_loop();
     osDelay(1000);
   }
@@ -668,11 +654,11 @@ void StartPrintTask02(void *argument)
   /* Infinite loop */
   for(;;)
   {
-    // LOG_Debug("TogglePin");
+    LOG_Debug("%s: TogglePin", __FUNCTION__);
     // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
     // PRINT_setup();
     // PRINT_print();
-    osDelay(100000);
+    osDelay(1000);
   }
   /* USER CODE END StartPrintTask02 */
 }
@@ -689,6 +675,7 @@ extern const unsigned char garfield_128x64 [];
 void StartDisplayTask(void *argument)
 {
   /* USER CODE BEGIN StartDisplayTask */
+  LOG_Debug("%s", __FUNCTION__);
   ssd1306_Init();
   uint8_t b = 0;
   /* Infinite loop */
@@ -754,7 +741,7 @@ void HAL_TIM_PeriodElapsedCallback(TIM_HandleTypeDef *htim)
 void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
-  LOG_Error("%s", __FUNCTION__);
+  // printf("%s", __FUNCTION__);
   /* User can add his own implementation to report the HAL error return state */
   __disable_irq();
   while (1)
