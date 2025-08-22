@@ -1,6 +1,6 @@
-#include "SD.h"
+#include "SD/SD.h"
 #include "semphr.h"
-#include "LOG.h"
+#include "LOG/LOG.h"
 
 extern SPI_HandleTypeDef hspi3;
 extern osSemaphoreId_t spi3_semHandle;

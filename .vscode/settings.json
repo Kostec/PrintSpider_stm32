@@ -31,7 +31,8 @@
         "span": "c",
         "vector": "c",
         "xstring": "c",
-        "xutility": "c"
+        "xutility": "c",
+        "string.h": "c"
     },
 
     "cmake.buildDirectory": "build/",

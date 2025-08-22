@@ -95,6 +95,12 @@ set(MIDDLEWARE_SOURCES
 )
 # ==============================MIDDLEWARE END==============================
 
+# ==============================OLED BEGIN==============================
+set(OLED_INCLUDES ssd1306)
+
+file(GLOB_RECURSE OLED_SOURCES ssd1306/*.*)
+# ==============================OLED END==============================
+
 set(MCU_FLAGS
     -mcpu=cortex-m4
     -mthumb
@@ -127,6 +133,7 @@ else()
         ${PROJECT_SOURCES}
         ${GLOB_RECURSE}
         ${MIDDLEWARE_SOURCES}
+        ${OLED_SOURCES}
     )
 
     add_custom_command(TARGET ${PROJECT_NAME}   POST_BUILD
@@ -137,6 +144,7 @@ else()
     include_directories (
         ${PROJECT_INCLUDES}
         ${MIDDLEWARE_INCLUDES}
+        ${OLED_INCLUDES}
     )
 
     set (CMAKE_EXECUTABLE_SUFFIX ".elf")
