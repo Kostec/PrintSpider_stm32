@@ -7,8 +7,10 @@
 #include <string.h>
 
 #define UART_TX_BUF_SIZE 256
-static uint8_t uart_tx_buf[UART_TX_BUF_SIZE];
 static LOG_tenLogLevel LOG_ActiveLogLevel;
+static uint8_t uart_tx_buf_number = 0;;
+uint8_t uart_tx_buf_0[UART_TX_BUF_SIZE];
+uint8_t uart_tx_buf_1[UART_TX_BUF_SIZE];
 static const char* LOG_LogLevelString[] = 
 {
     "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"
@@ -24,7 +26,10 @@ int _write(int file, char *ptr, int len)
   len = len > UART_TX_BUF_SIZE ? UART_TX_BUF_SIZE : len;
   
   // guarantee only one call
-  xSemaphoreTake(uartMutex, portMAX_DELAY);
+  xSemaphoreTake(uartMutex, portMAX_DELAY);  
+  uint8_t* uart_tx_buf = uart_tx_buf_number == 0 ? uart_tx_buf_0 : uart_tx_buf_1;
+  uart_tx_buf_number = uart_tx_buf_number == 0 ? 1 : 0;
+  memset(uart_tx_buf, 0, UART_TX_BUF_SIZE);
   memcpy(uart_tx_buf, ptr, len);
 
   // waiting for UART ready state
