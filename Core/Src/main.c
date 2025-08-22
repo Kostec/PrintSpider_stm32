@@ -28,8 +28,9 @@
 #include <Print/print.h>
 #include <LED/ws2812.h>
 #include "LOG/LOG.h"
-// #include "ssd1306.h"
-// #include "ssd1306_fonts.h"
+#include "ssd1306.h"
+#include "ssd1306_fonts.h"
+#include "ssd1306_tests.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -72,6 +73,13 @@ const osThreadAttr_t printTask_attributes = {
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
 };
+/* Definitions for DisplayTask */
+osThreadId_t DisplayTaskHandle;
+const osThreadAttr_t DisplayTask_attributes = {
+  .name = "DisplayTask",
+  .stack_size = 128 * 4,
+  .priority = (osPriority_t) osPriorityLow,
+};
 /* Definitions for spi3_sem */
 osSemaphoreId_t spi3_semHandle;
 const osSemaphoreAttr_t spi3_sem_attributes = {
@@ -96,6 +104,7 @@ static void MX_SPI3_Init(void);
 static void MX_I2C3_Init(void);
 void StartDefaultTask(void *argument);
 void StartPrintTask02(void *argument);
+void StartDisplayTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 int _write(int file, char *ptr, int len) {
@@ -288,6 +297,9 @@ int main(void)
 
   /* creation of printTask */
   printTaskHandle = osThreadNew(StartPrintTask02, NULL, &printTask_attributes);
+
+  /* creation of DisplayTask */
+  DisplayTaskHandle = osThreadNew(StartDisplayTask, NULL, &DisplayTask_attributes);
 
   /* USER CODE BEGIN RTOS_THREADS */
   LOG_Debug("USER BEGIN definitions");
@@ -634,10 +646,6 @@ void SD_loop()
 void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
-  // ssd1306_Init();
-  // ssd1306_SetCursor(10,10);
-  // ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
-  // ssd1306_UpdateScreen();
   /* Infinite loop */
   for(;;)
   {
@@ -667,6 +675,54 @@ void StartPrintTask02(void *argument)
     osDelay(100000);
   }
   /* USER CODE END StartPrintTask02 */
+}
+
+/* USER CODE BEGIN Header_StartDisplayTask */
+extern const unsigned char garfield_128x64 [];
+
+/**
+* @brief Function implementing the DisplayTask thread.
+* @param argument: Not used
+* @retval None
+*/
+/* USER CODE END Header_StartDisplayTask */
+void StartDisplayTask(void *argument)
+{
+  /* USER CODE BEGIN StartDisplayTask */
+  ssd1306_Init();
+  uint8_t b = 0;
+  /* Infinite loop */
+  for(;;)
+  {
+    ssd1306_Fill(Black);
+    if (b == 0)
+    {
+      ssd1306_SetCursor(3, 3);
+      ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
+      ssd1306_FillRectangle(110, 0, 125, 15, White);
+      ssd1306_FillCircle(20, 28, 10, White);
+    }
+    else if (b == 1)
+    {
+      ssd1306_SetCursor(3, 3);
+      ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
+      ssd1306_DrawRectangle(110, 0, 125, 15, White);
+      ssd1306_DrawCircle(20, 28, 10, White);
+    }
+    else if (b == 2)
+    {
+      // ssd1306_TestDrawBitmap();
+      ssd1306_Fill(White);
+      ssd1306_DrawBitmap(0,16,garfield_128x64,128,64,Black);
+      ssd1306_UpdateScreen();
+    }
+
+    b++;
+    b = b > 2 ? 0 : b;
+    ssd1306_UpdateScreen();
+    osDelay(1000);
+  }
+  /* USER CODE END StartDisplayTask */
 }
 
 /**
