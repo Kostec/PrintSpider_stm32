@@ -23,7 +23,7 @@ jobs:
       - name: Download build artifacts
         uses: actions/download-artifact@v4
         with:
-          name: PrintSpider-${{ github.sha }}
+          name: build-output-${{ github.sha }}
           path: build
 
       # - name: Download tests artifacts
