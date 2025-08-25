@@ -64,7 +64,7 @@ osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for printTask */
 osThreadId_t printTaskHandle;
@@ -79,6 +79,11 @@ const osThreadAttr_t DisplayTask_attributes = {
   .name = "DisplayTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityLow,
+};
+/* Definitions for myQueue01 */
+osMessageQueueId_t myQueue01Handle;
+const osMessageQueueAttr_t myQueue01_attributes = {
+  .name = "myQueue01"
 };
 /* Definitions for spi3_sem */
 osSemaphoreId_t spi3_semHandle;
@@ -271,6 +276,10 @@ int main(void)
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
+  /* Create the queue(s) */
+  /* creation of myQueue01 */
+  myQueue01Handle = osMessageQueueNew (16, sizeof(uint16_t), &myQueue01_attributes);
+
   /* USER CODE BEGIN RTOS_QUEUES */
   // LOG_Debug("USER RTOS_QUEUES definitions");
   /* add queues, ... */
@@ -343,7 +352,7 @@ void SystemClock_Config(void)
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
-  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
+  RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
@@ -410,7 +419,7 @@ static void MX_SPI3_Init(void)
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_32;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -526,6 +535,7 @@ static void MX_GPIO_Init(void)
   /* USER CODE END MX_GPIO_Init_1 */
 
   /* GPIO Ports Clock Enable */
+  __HAL_RCC_GPIOH_CLK_ENABLE();
   __HAL_RCC_GPIOC_CLK_ENABLE();
   __HAL_RCC_GPIOA_CLK_ENABLE();
   __HAL_RCC_GPIOB_CLK_ENABLE();
@@ -573,7 +583,7 @@ static void MX_GPIO_Init(void)
   /*Configure GPIO pin : SPI3_CS_SD_Pin */
   GPIO_InitStruct.Pin = SPI3_CS_SD_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_NOPULL;
+  GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SPI3_CS_SD_GPIO_Port, &GPIO_InitStruct);
 
@@ -590,37 +600,44 @@ static void MX_GPIO_Init(void)
 
 void SD_loop()
 {
-  static char SDPath[] = "0:/";
   static uint8_t mounted = 0;
-
   if (!mounted)
+  {
+    FRESULT res = f_mount(&USERFatFS, USERPath, 1);
+    if (res != FR_OK)
     {
-      if (f_mount(&USERFatFS, SDPath, 1) != FR_OK)
-      {
-        LOG_Debug("%s: SD card not found", __FUNCTION__);
-      }
-      else
-      {
-        LOG_Debug("%s: SD card is available", __FUNCTION__);
-        mounted = 1;
-      }
+      LOG_Debug("%s: SD card not found. Error: %d", __FUNCTION__, res);
     }
     else
     {
-      DIR dir;
-      FILINFO fno;
-      FRESULT res = f_opendir(&dir, SDPath);
-      if (res == FR_OK) {
-          while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0]) {
-            LOG_Debug("%s: filename=%s", __FUNCTION__, fno.fname);
-          }
-          f_closedir(&dir);
-      }
-      else {
-        mounted = 0;
-      }
+      LOG_Debug("%s: SD card is available", __FUNCTION__);
+      mounted = 1;
     }
-    osDelay(5000);
+  }
+  else
+  {
+    uint32_t freeClusters;
+    FATFS* pUSERFatFS = &USERFatFS;
+    f_getfree(USERPath, &freeClusters, &pUSERFatFS);
+    osDelay(50);
+    LOG_Debug("%s: Free clusters=%lu", __FUNCTION__, freeClusters);
+    DIR dir;
+    FILINFO fno;
+    FRESULT res = f_opendir(&dir, USERPath);
+    osDelay(50);
+    if (res == FR_OK) {
+        while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0]) {
+          LOG_Debug("%s: filename=%s", __FUNCTION__, fno.fname);
+          osDelay(50);
+        }
+        osDelay(50);
+        f_closedir(&dir);
+        osDelay(50);
+    }
+    else {
+      mounted = 0;
+    }
+  }
 }
 /**
   * @brief  Function implementing the defaultTask thread.
@@ -632,11 +649,11 @@ void StartDefaultTask(void *argument)
 {
   /* USER CODE BEGIN 5 */
   /* Infinite loop */
+  osDelay(2000);
   for(;;)
   {
-    LOG_Debug("%s", __FUNCTION__);
-    // SD_loop();
-    osDelay(1000);
+    SD_loop();
+    osDelay(3000);
   }
   /* USER CODE END 5 */
 }
@@ -655,7 +672,7 @@ void StartPrintTask02(void *argument)
   for(;;)
   {
     LOG_Debug("%s: TogglePin", __FUNCTION__);
-    // HAL_GPIO_TogglePin(GPIOA, GPIO_PIN_5);
+    HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
     // PRINT_setup();
     // PRINT_print();
     osDelay(1000);
@@ -665,6 +682,40 @@ void StartPrintTask02(void *argument)
 
 /* USER CODE BEGIN Header_StartDisplayTask */
 extern const unsigned char garfield_128x64 [];
+
+void ProcessOLED()
+{
+  static uint8_t b = 0;
+  ssd1306_Fill(Black);
+  if (b == 0)
+  {
+    LOG_Debug("%s: Hello, OLDED! Fill", __FUNCTION__);
+    ssd1306_SetCursor(3, 3);
+    ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
+    ssd1306_FillRectangle(110, 0, 125, 15, White);
+    ssd1306_FillCircle(20, 28, 10, White);
+  }
+  else if (b == 1)
+  {
+    ssd1306_SetCursor(3, 3);
+    LOG_Debug("%s: Hello, OLDED! Empty", __FUNCTION__);
+    ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
+    ssd1306_DrawRectangle(110, 0, 125, 15, White);
+    ssd1306_DrawCircle(20, 28, 10, White);
+  }
+  else if (b == 2)
+  {
+    // ssd1306_TestDrawBitmap();
+    LOG_Debug("%s: Garfield", __FUNCTION__);
+    ssd1306_Fill(White);
+    ssd1306_DrawBitmap(0,16,garfield_128x64,128,64,Black);
+    ssd1306_UpdateScreen();
+  }
+
+  b++;
+  b = b > 2 ? 0 : b;
+  ssd1306_UpdateScreen();
+}
 
 /**
 * @brief Function implementing the DisplayTask thread.
@@ -677,36 +728,10 @@ void StartDisplayTask(void *argument)
   /* USER CODE BEGIN StartDisplayTask */
   LOG_Debug("%s", __FUNCTION__);
   ssd1306_Init();
-  uint8_t b = 0;
   /* Infinite loop */
   for(;;)
   {
-    ssd1306_Fill(Black);
-    if (b == 0)
-    {
-      ssd1306_SetCursor(3, 3);
-      ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
-      ssd1306_FillRectangle(110, 0, 125, 15, White);
-      ssd1306_FillCircle(20, 28, 10, White);
-    }
-    else if (b == 1)
-    {
-      ssd1306_SetCursor(3, 3);
-      ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
-      ssd1306_DrawRectangle(110, 0, 125, 15, White);
-      ssd1306_DrawCircle(20, 28, 10, White);
-    }
-    else if (b == 2)
-    {
-      // ssd1306_TestDrawBitmap();
-      ssd1306_Fill(White);
-      ssd1306_DrawBitmap(0,16,garfield_128x64,128,64,Black);
-      ssd1306_UpdateScreen();
-    }
-
-    b++;
-    b = b > 2 ? 0 : b;
-    ssd1306_UpdateScreen();
+    ProcessOLED();
     osDelay(1000);
   }
   /* USER CODE END StartDisplayTask */
