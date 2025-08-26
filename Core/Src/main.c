@@ -28,6 +28,7 @@
 #include <Print/print.h>
 #include <LED/ws2812.h>
 #include "LOG/LOG.h"
+#include "DIO/DIO.h"
 #include "ssd1306.h"
 #include "ssd1306_fonts.h"
 #include "ssd1306_tests.h"
@@ -50,6 +51,7 @@
 
 /* Private variables ---------------------------------------------------------*/
 I2C_HandleTypeDef hi2c3;
+DMA_HandleTypeDef hdma_i2c3_tx;
 
 SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi3_rx;
@@ -92,9 +94,9 @@ const osSemaphoreAttr_t spi3_sem_attributes = {
 };
 /* USER CODE BEGIN PV */
 
-osSemaphoreId_t uart2_semHandle;
-const osSemaphoreAttr_t uart2_sem_attributes = {
-  .name = "uart2_sem"
+SemaphoreHandle_t i2c3TxSem;
+const osSemaphoreAttr_t i2c3_sem_attributes = {
+  .name = "i2c3_sem"
 };
 
 /* USER CODE END PV */
@@ -112,6 +114,51 @@ void StartPrintTask02(void *argument);
 void StartDisplayTask(void *argument);
 
 /* USER CODE BEGIN PFP */
+HAL_StatusTypeDef I2C_MemWrite(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
+{
+    while (HAL_I2C_GetState(&SSD1306_I2C_PORT) != HAL_I2C_STATE_READY) {
+      osDelay(1);
+    }
+
+    if (HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, DevAddress, MemAddress, MemAddSize, pData, Size, HAL_MAX_DELAY) != HAL_OK)
+    {
+      return HAL_ERROR;
+    }
+
+    uint32_t start = HAL_GetTick();
+    while (HAL_I2C_GetState(&SSD1306_I2C_PORT) != HAL_I2C_STATE_READY) {
+        if ((HAL_GetTick() - start) > 100) {
+            return HAL_TIMEOUT;
+        }
+        osDelay(1);
+    }
+    // Wait DMA finish
+    // if (osSemaphoreAcquire(i2c3TxSem, 100) != osOK) 
+    // {
+    //   return HAL_TIMEOUT;
+    // }
+    // osDelay(5);
+    return HAL_OK;
+}
+
+void HAL_I2C_MemTxCpltCallback(I2C_HandleTypeDef *hi2c)
+{
+    if (hi2c == &SSD1306_I2C_PORT)
+    {
+      // osSemaphoreRelease(i2c3TxSem);
+    }
+}
+
+void HAL_I2C_ErrorCallback(I2C_HandleTypeDef *hi2c)
+{
+  if (hi2c == &SSD1306_I2C_PORT)
+  {
+    // osSemaphoreRelease(i2c3TxSem);
+  }
+
+  /* здесь ловим таймаут, NACK, ошибки шины и т.д. */
+  Error_Handler();
+}
 
 //==============================MicroSD BEGIN==============================
 #define SD_CS_LOW()  HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET)
@@ -147,10 +194,13 @@ void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
     }
 }
 
-HAL_StatusTypeDef SPI3_Transmit_DMA(uint8_t *txBuf, uint16_t len)
+HAL_StatusTypeDef SPI3_Transmit_DMA(const uint8_t *txBuf, uint16_t len)
 {
   SD_CS_LOW();
-  if (HAL_SPI_Transmit_DMA(&hspi3, txBuf, len) != HAL_OK)
+  vPortEnterCritical();
+  HAL_StatusTypeDef res = HAL_SPI_Transmit_DMA(&hspi3, txBuf, len);
+  vPortExitCritical();
+  if (res != HAL_OK)
   {
     SD_CS_LOW();
     return HAL_ERROR;
@@ -170,7 +220,11 @@ HAL_StatusTypeDef SPI3_Transmit_DMA(uint8_t *txBuf, uint16_t len)
 HAL_StatusTypeDef SPI3_Receive_DMA(uint8_t *txBuf, uint16_t len)
 {
   SD_CS_LOW();
-  if (HAL_SPI_Receive_DMA(&hspi3, txBuf, len) != HAL_OK)
+  
+  vPortEnterCritical();
+  HAL_StatusTypeDef res = HAL_SPI_Receive_DMA(&hspi3, txBuf, len);
+  vPortExitCritical();
+  if (res != HAL_OK)
   {
     SD_CS_LOW();
     return HAL_ERROR;
@@ -187,11 +241,13 @@ HAL_StatusTypeDef SPI3_Receive_DMA(uint8_t *txBuf, uint16_t len)
   return HAL_OK;
 }
 
-
-HAL_StatusTypeDef SPI3_TransmitReceive_DMA(uint8_t *txBuf, uint8_t *rxBuf, uint16_t len, uint32_t timeout) {
+HAL_StatusTypeDef SPI3_TransmitReceive_DMA(const uint8_t *txBuf, uint8_t *rxBuf, uint16_t len, uint32_t timeout) {
   SD_CS_LOW();
 
-  if (HAL_SPI_TransmitReceive_DMA(&hspi3, txBuf, rxBuf, len) != HAL_OK) {
+  vPortEnterCritical();
+  HAL_StatusTypeDef res = HAL_SPI_TransmitReceive_DMA(&hspi3, txBuf, rxBuf, len);
+  vPortExitCritical();
+  if (res != HAL_OK) {
       SD_CS_HIGH();
       return HAL_ERROR;
   }
@@ -249,7 +305,8 @@ int main(void)
   MX_FATFS_Init();
   MX_I2C3_Init();
   /* USER CODE BEGIN 2 */
-  LOG_Init();  
+  LOG_Init();
+  DIO_Init();
   // LOG_Debug("Init RTOS");
   /* USER CODE END 2 */
 
@@ -267,7 +324,8 @@ int main(void)
 
   /* USER CODE BEGIN RTOS_SEMAPHORES */
   // LOG_Debug("USER RTOS_SEMAPHORES definitions");
-  uart2_semHandle = osSemaphoreNew(1, 0, &uart2_sem_attributes);
+  i2c3TxSem = osSemaphoreNew(1, 0, &i2c3_sem_attributes);
+  configASSERT(i2c3TxSem);
   /* add semaphores, ... */
   /* USER CODE END RTOS_SEMAPHORES */
 
@@ -341,7 +399,12 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSI;
   RCC_OscInitStruct.HSIState = RCC_HSI_ON;
   RCC_OscInitStruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_NONE;
+  RCC_OscInitStruct.PLL.PLLState = RCC_PLL_ON;
+  RCC_OscInitStruct.PLL.PLLSource = RCC_PLLSOURCE_HSI;
+  RCC_OscInitStruct.PLL.PLLM = 8;
+  RCC_OscInitStruct.PLL.PLLN = 96;
+  RCC_OscInitStruct.PLL.PLLP = RCC_PLLP_DIV2;
+  RCC_OscInitStruct.PLL.PLLQ = 4;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
     Error_Handler();
@@ -351,12 +414,12 @@ void SystemClock_Config(void)
   */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
-  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_HSI;
+  RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
   RCC_ClkInitStruct.AHBCLKDivider = RCC_SYSCLK_DIV2;
   RCC_ClkInitStruct.APB1CLKDivider = RCC_HCLK_DIV2;
   RCC_ClkInitStruct.APB2CLKDivider = RCC_HCLK_DIV1;
 
-  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_0) != HAL_OK)
+  if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_1) != HAL_OK)
   {
     Error_Handler();
   }
@@ -419,7 +482,7 @@ static void MX_SPI3_Init(void)
   hspi3.Init.CLKPolarity = SPI_POLARITY_LOW;
   hspi3.Init.CLKPhase = SPI_PHASE_1EDGE;
   hspi3.Init.NSS = SPI_NSS_SOFT;
-  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_16;
+  hspi3.Init.BaudRatePrescaler = SPI_BAUDRATEPRESCALER_8;
   hspi3.Init.FirstBit = SPI_FIRSTBIT_MSB;
   hspi3.Init.TIMode = SPI_TIMODE_DISABLE;
   hspi3.Init.CRCCalculation = SPI_CRCCALCULATION_DISABLE;
@@ -513,6 +576,9 @@ static void MX_DMA_Init(void)
   /* DMA1_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream0_IRQn);
+  /* DMA1_Stream4_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA1_Stream4_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA1_Stream4_IRQn);
   /* DMA1_Stream5_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA1_Stream5_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA1_Stream5_IRQn);
@@ -616,16 +682,19 @@ void SD_loop()
   }
   else
   {
-    uint32_t freeClusters;
-    FATFS* pUSERFatFS = &USERFatFS;
-    f_getfree(USERPath, &freeClusters, &pUSERFatFS);
-    osDelay(50);
-    LOG_Debug("%s: Free clusters=%lu", __FUNCTION__, freeClusters);
+    // uint32_t freeClusters;
+    // FATFS* pUSERFatFS = &USERFatFS;
+    // LOG_Debug("%s: read free clusters", __FUNCTION__);
+    // f_getfree(USERPath, &freeClusters, &pUSERFatFS);
+    // osDelay(50);
+    // LOG_Debug("%s: Free clusters=%lu", __FUNCTION__, freeClusters);
     DIR dir;
     FILINFO fno;
+    LOG_Debug("%s: opendir", __FUNCTION__);
     FRESULT res = f_opendir(&dir, USERPath);
     osDelay(50);
     if (res == FR_OK) {
+        LOG_Debug("%s: readdir", __FUNCTION__);
         while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0]) {
           LOG_Debug("%s: filename=%s", __FUNCTION__, fno.fname);
           osDelay(50);

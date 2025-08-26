@@ -36,8 +36,8 @@ extern SPI_HandleTypeDef SD_SPI_HANDLE;
 /* Function prototypes */
 
 //(Note that the _256 is used as a mask to clear the prescalar bits as it provides binary 111 in the correct position)
-#define FCLK_SLOW() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_128); }	/* Set SCLK = slow, approx 280 KBits/s*/
-#define FCLK_FAST() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_8); }	/* Set SCLK = fast, approx 4.5 MBits/s */
+#define FCLK_SLOW() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_256); }	/* Set SCLK = slow, approx 195 KBits/s*/
+#define FCLK_FAST() { MODIFY_REG(SD_SPI_HANDLE.Instance->CR1, SPI_BAUDRATEPRESCALER_256, SPI_BAUDRATEPRESCALER_8); }	/* Set SCLK = fast, approx 6.25 MBits/s */
 
 #define CS_HIGH()	{HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_SET);}
 #define CS_LOW()	{HAL_GPIO_WritePin(GPIOD, GPIO_PIN_2, GPIO_PIN_RESET);}
@@ -87,6 +87,9 @@ BYTE CardType;			/* Card type flags */
 uint32_t spiTimerTickStart;
 uint32_t spiTimerTickDelay;
 
+extern HAL_StatusTypeDef SPI3_TransmitReceive_DMA(const uint8_t *txBuf, uint8_t *rxBuf, uint16_t len, uint32_t timeout);
+extern HAL_StatusTypeDef SPI3_Transmit_DMA(const uint8_t *txBuf, uint16_t len);
+
 void SPI_Timer_On(uint32_t waitTicks) {
     spiTimerTickStart = HAL_GetTick();
     spiTimerTickDelay = waitTicks;
@@ -107,7 +110,9 @@ BYTE xchg_spi (
 )
 {
 	BYTE rxDat;
-    HAL_SPI_TransmitReceive(&SD_SPI_HANDLE, &dat, &rxDat, 1, 50);
+	SPI3_TransmitReceive_DMA(&dat, &rxDat, 1, 50);
+    // HAL_SPI_TransmitReceive(&SD_SPI_HANDLE, &dat, &rxDat, 1, 50);
+	osDelay(1); // non-block another tasks
     return rxDat;
 }
 
@@ -127,13 +132,14 @@ void rcvr_spi_multi (
 
 #if _USE_WRITE
 /* Send multiple byte */
-static
-void xmit_spi_multi (
+static void xmit_spi_multi (
 	const BYTE *buff,	/* Pointer to the data */
 	UINT btx			/* Number of bytes to send (even number) */
 )
 {
-	HAL_SPI_Transmit(&SD_SPI_HANDLE, buff, btx, HAL_MAX_DELAY);
+	SPI3_Transmit_DMA(buff, btx);
+	osDelay(1); // non-block another tasks
+	// HAL_SPI_Transmit(&SD_SPI_HANDLE, buff, btx, HAL_MAX_DELAY);
 }
 #endif
 
@@ -142,8 +148,7 @@ void xmit_spi_multi (
 /* Wait for card ready                                                   */
 /*-----------------------------------------------------------------------*/
 
-static
-int wait_ready (	/* 1:Ready, 0:Timeout */
+static int wait_ready (	/* 1:Ready, 0:Timeout */
 	UINT wt			/* Timeout [ms] */
 )
 {
