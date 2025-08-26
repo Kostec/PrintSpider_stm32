@@ -33,7 +33,9 @@
         "xstring": "c",
         "xutility": "c",
         "string.h": "c",
-        "log.h": "c"
+        "log.h": "c",
+        "limits": "c",
+        "math.h": "c"
     },
 
     "cmake.buildDirectory": "build/",
