@@ -23,7 +23,7 @@ HAL_StatusTypeDef I2C_MemWrite(uint16_t DevAddress, uint16_t MemAddress, uint16_
       osDelay(1);
     }
 
-    if (HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, DevAddress, MemAddress, MemAddSize, pData, Size, HAL_MAX_DELAY) != HAL_OK)
+    if (HAL_I2C_Mem_Write(&SSD1306_I2C_PORT, DevAddress, MemAddress, MemAddSize, pData, Size, 100) != HAL_OK)
     {
       return HAL_ERROR;
     }
