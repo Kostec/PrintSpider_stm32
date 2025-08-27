@@ -57,8 +57,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define STICK_Y_Pin GPIO_PIN_0
+#define STICK_Y_GPIO_Port GPIOC
+#define STICK_SW_Pin GPIO_PIN_1
+#define STICK_SW_GPIO_Port GPIOC
 #define LED_GREEN_Pin GPIO_PIN_5
 #define LED_GREEN_GPIO_Port GPIOA
+#define STICK_X_Pin GPIO_PIN_0
+#define STICK_X_GPIO_Port GPIOB
 #define SPI3_CS_SD_Pin GPIO_PIN_2
 #define SPI3_CS_SD_GPIO_Port GPIOD
 

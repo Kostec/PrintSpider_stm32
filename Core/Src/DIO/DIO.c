@@ -4,6 +4,7 @@
 #include <FreeRTOS.h>
 #include <semphr.h>
 #include "LOG/LOG.h"
+#include "DIO/STICK.h"
 
 SemaphoreHandle_t i2cTxSem;
 SemaphoreHandle_t i2cRxSem;
@@ -39,7 +40,7 @@ void DIO_WritePins(PCF8574_Data data)
         vTaskDelay(1);
     }
 
-    if (HAL_I2C_Master_Transmit(&PCF8574_I2C_PORT, PCF8574_I2C_ADDR, &data.byte, 1, HAL_MAX_DELAY) != HAL_OK)
+    if (HAL_I2C_Master_Transmit(&PCF8574_I2C_PORT, PCF8574_I2C_ADDR, &data.byte, 1, 100) != HAL_OK)
     {
         LOG_Error("%s: Transmit error", __FUNCTION__);
         return; // HAL_ERROR
@@ -63,7 +64,7 @@ void DIO_ReadPins()
         vTaskDelay(1);
     }
   
-    if (HAL_I2C_Master_Receive(&PCF8574_I2C_PORT, PCF8574_I2C_ADDR, &_data.byte, 1, HAL_MAX_DELAY) != HAL_OK)
+    if (HAL_I2C_Master_Receive(&PCF8574_I2C_PORT, PCF8574_I2C_ADDR, &_data.byte, 1, 100) != HAL_OK)
     {
         LOG_Error("%s: Receive error", __FUNCTION__);
         return; // HAL_ERROR
@@ -77,7 +78,7 @@ void DIO_ReadPins()
         }
         vTaskDelay(1);
     }
-    LOG_Error("%s: Receive OK", __FUNCTION__);
+    LOG_Debug("%s: Receive OK", __FUNCTION__);
 }
 
 void DIO_Task(void *pvParameters)
@@ -86,11 +87,12 @@ void DIO_Task(void *pvParameters)
     0xFF all pins are inputs
     0x00 all pins are outputs
     */
-    _data.byte = 0xFF;
+    _data.byte = 0x00;
     DIO_WritePins(_data);
     for (;;) {
         DIO_ReadPins();
         LOG_Debug("%s: 0x%x", __FUNCTION__, _data.byte);
+        STICK_Process();
         vTaskDelay(500);
     }
 }
