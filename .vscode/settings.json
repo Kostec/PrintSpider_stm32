@@ -35,7 +35,11 @@
         "string.h": "c",
         "log.h": "c",
         "limits": "c",
-        "math.h": "c"
+        "math.h": "c",
+        "main_menu.h": "c",
+        "ssd1306.h": "c",
+        "menu_resources.h": "c",
+        "ssd1306_tests.h": "c"
     },
 
     "cmake.buildDirectory": "build/",

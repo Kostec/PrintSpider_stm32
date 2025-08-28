@@ -9,6 +9,7 @@
 
 #include "LOG/LOG.h"
 #include "main.h" // ErrorHandler declaration
+#include "MAIN_MENU.h"
 
 osThreadId_t OLED_TaskHandle;
 const osThreadAttr_t OLED_TaskAttributes = {
@@ -69,30 +70,31 @@ void ProcessOLED()
 {
   static uint8_t b = 0;
   ssd1306_Fill(Black);
-  if (b == 0)
-  {
-    LOG_Debug("%s: Hello, OLDED! Fill", __FUNCTION__);
-    ssd1306_SetCursor(3, 3);
-    ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
-    ssd1306_FillRectangle(110, 0, 125, 15, White);
-    ssd1306_FillCircle(20, 28, 10, White);
-  }
-  else if (b == 1)
-  {
-    ssd1306_SetCursor(3, 3);
-    LOG_Debug("%s: Hello, OLDED! Empty", __FUNCTION__);
-    ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
-    ssd1306_DrawRectangle(110, 0, 125, 15, White);
-    ssd1306_DrawCircle(20, 28, 10, White);
-  }
-  else if (b == 2)
-  {
-    // ssd1306_TestDrawBitmap();
-    LOG_Debug("%s: Garfield", __FUNCTION__);
-    ssd1306_Fill(White);
-    ssd1306_DrawBitmap(0,16,garfield_128x64,128,64,Black);
-    ssd1306_UpdateScreen();
-  }
+  MAIN_MENU_Draw();
+  // if (b == 0)
+  // {
+  //   LOG_Debug("%s: Hello, OLDED! Fill", __FUNCTION__);
+  //   ssd1306_SetCursor(3, 3);
+  //   ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
+  //   ssd1306_FillRectangle(110, 0, 125, 15, White);
+  //   ssd1306_FillCircle(20, 28, 10, White);
+  // }
+  // else if (b == 1)
+  // {
+  //   ssd1306_SetCursor(3, 3);
+  //   LOG_Debug("%s: Hello, OLDED! Empty", __FUNCTION__);
+  //   ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
+  //   ssd1306_DrawRectangle(110, 0, 125, 15, White);
+  //   ssd1306_DrawCircle(20, 28, 10, White);
+  // }
+  // else if (b == 2)
+  // {
+  //   // ssd1306_TestDrawBitmap();
+  //   LOG_Debug("%s: Garfield", __FUNCTION__);
+  //   ssd1306_Fill(White);
+  //   ssd1306_DrawBitmap(0,16,garfield_128x64,128,64,Black);
+  //   ssd1306_UpdateScreen();
+  // }
 
   b++;
   b = b > 2 ? 0 : b;

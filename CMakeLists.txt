@@ -52,6 +52,8 @@ set (PROJECT_INCLUDES
     Core/Inc/SD
     Core/Inc/LED
     Core/Inc/LOG
+    Core/Inc/OLED
+    Core/Inc/OLED/MENU
     Core/Inc/Print
     Drivers/STM32F4xx_HAL_Driver/Inc
     Drivers/CMSIS/Include
