@@ -103,11 +103,11 @@ void MAIN_MENU_ScrollDown()
 void MAIN_MENU_StickAction()
 {
     tstStick stick = STICK_GetStick();
-    if (stick.Y.direction == -1)
+    if (stick.Y.direction == -1 && stick.Y.state == HalfCrossed)
     {
         MAIN_MENU_ScrollDown();
     }
-    else if (stick.Y.direction == 1)
+    else if (stick.Y.direction == 1 && stick.Y.state == HalfCrossed)
     {
         MAIN_MENU_ScrollUp();
     }
@@ -115,7 +115,7 @@ void MAIN_MENU_StickAction()
 
 void MAIN_MENU_EventHandler(tenEVHD_Event ev)
 {
-    if (ev == EVHD_STICK_StateChanged)
+    if (ev == EVHD_STICK_YStateChanged)
     {
         MAIN_MENU_StickAction();
     }

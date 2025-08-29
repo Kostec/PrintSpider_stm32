@@ -5,7 +5,9 @@
 
 typedef enum
 {
-    EVHD_STICK_StateChanged,
+    EVHD_STICK_XStateChanged,
+    EVHD_STICK_YStateChanged,
+    EVHD_STICK_SWStateChanged,
     tenOfEventSize
 } tenEVHD_Event;
 

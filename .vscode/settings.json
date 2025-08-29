@@ -43,7 +43,8 @@
         "type_traits": "c",
         "adc.h": "c",
         "stick.h": "c",
-        "stdbool.h": "c"
+        "stdbool.h": "c",
+        "evhd.h": "c"
     },
 
     "cmake.buildDirectory": "build/",

@@ -68,7 +68,7 @@ DMA_HandleTypeDef hdma_usart2_tx;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 128 * 4,
+  .stack_size = 256 * 4,
   .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for printTask */
@@ -77,18 +77,6 @@ const osThreadAttr_t printTask_attributes = {
   .name = "printTask",
   .stack_size = 128 * 4,
   .priority = (osPriority_t) osPriorityNormal,
-};
-/* Definitions for DisplayTask */
-osThreadId_t DisplayTaskHandle;
-const osThreadAttr_t DisplayTask_attributes = {
-  .name = "DisplayTask",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
-/* Definitions for myQueue01 */
-osMessageQueueId_t myQueue01Handle;
-const osMessageQueueAttr_t myQueue01_attributes = {
-  .name = "myQueue01"
 };
 /* Definitions for spi3_sem */
 osSemaphoreId_t spi3_semHandle;
@@ -115,7 +103,6 @@ static void MX_I2C3_Init(void);
 static void MX_ADC1_Init(void);
 void StartDefaultTask(void *argument);
 void StartPrintTask02(void *argument);
-void StartDisplayTask(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -125,40 +112,32 @@ void StartDisplayTask(void *argument);
 
 void HAL_SPI_TxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    BaseType_t xHigherPriorityWoken = pdFALSE;
     if (hspi == &hspi3) 
     {
-      xSemaphoreGiveFromISR(spi3_semHandle, &xHigherPriorityWoken);
-      portYIELD_FROM_ISR(xHigherPriorityWoken);
+      osSemaphoreRelease(spi3_semHandle);
     }
 }
 
 void HAL_SPI_RxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    BaseType_t xHigherPriorityWoken = pdFALSE;
     if (hspi == &hspi3) 
     {
-      xSemaphoreGiveFromISR(spi3_semHandle, &xHigherPriorityWoken);
-      portYIELD_FROM_ISR(xHigherPriorityWoken);
+      osSemaphoreRelease(spi3_semHandle);
     }
 }
 
 void HAL_SPI_TxRxCpltCallback(SPI_HandleTypeDef *hspi)
 {
-    BaseType_t xHigherPriorityWoken = pdFALSE;
     if (hspi == &hspi3) 
     {
-      xSemaphoreGiveFromISR(spi3_semHandle, &xHigherPriorityWoken);
-      portYIELD_FROM_ISR(xHigherPriorityWoken);
+      osSemaphoreRelease(spi3_semHandle);
     }
 }
 
 HAL_StatusTypeDef SPI3_Transmit_DMA(const uint8_t *txBuf, uint16_t len)
 {
   SD_CS_LOW();
-  vPortEnterCritical();
   HAL_StatusTypeDef res = HAL_SPI_Transmit_DMA(&hspi3, txBuf, len);
-  vPortExitCritical();
   if (res != HAL_OK)
   {
     SD_CS_LOW();
@@ -180,9 +159,7 @@ HAL_StatusTypeDef SPI3_Receive_DMA(uint8_t *txBuf, uint16_t len)
 {
   SD_CS_LOW();
   
-  vPortEnterCritical();
   HAL_StatusTypeDef res = HAL_SPI_Receive_DMA(&hspi3, txBuf, len);
-  vPortExitCritical();
   if (res != HAL_OK)
   {
     SD_CS_LOW();
@@ -203,9 +180,7 @@ HAL_StatusTypeDef SPI3_Receive_DMA(uint8_t *txBuf, uint16_t len)
 HAL_StatusTypeDef SPI3_TransmitReceive_DMA(const uint8_t *txBuf, uint8_t *rxBuf, uint16_t len, uint32_t timeout) {
   SD_CS_LOW();
 
-  vPortEnterCritical();
   HAL_StatusTypeDef res = HAL_SPI_TransmitReceive_DMA(&hspi3, txBuf, rxBuf, len);
-  vPortExitCritical();
   if (res != HAL_OK) {
       SD_CS_HIGH();
       return HAL_ERROR;
@@ -292,12 +267,8 @@ int main(void)
   /* start timers, add new ones, ... */
   /* USER CODE END RTOS_TIMERS */
 
-  /* Create the queue(s) */
-  /* creation of myQueue01 */
-  myQueue01Handle = osMessageQueueNew (16, sizeof(uint16_t), &myQueue01_attributes);
-
   /* USER CODE BEGIN RTOS_QUEUES */
-  // LOG_Debug("USER RTOS_QUEUES definitions");
+  LOG_Init();
   /* add queues, ... */
   /* USER CODE END RTOS_QUEUES */
 
@@ -308,12 +279,8 @@ int main(void)
   /* creation of printTask */
   printTaskHandle = osThreadNew(StartPrintTask02, NULL, &printTask_attributes);
 
-  /* creation of DisplayTask */
-  DisplayTaskHandle = osThreadNew(StartDisplayTask, NULL, &DisplayTask_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
-  LOG_Init();
   EVHD_Init();
   ADC_Init();
   DIO_Init();
@@ -754,26 +721,6 @@ void StartPrintTask02(void *argument)
     osDelay(1000);
   }
   /* USER CODE END StartPrintTask02 */
-}
-
-/* USER CODE BEGIN Header_StartDisplayTask */
-
-/**
-* @brief Function implementing the DisplayTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartDisplayTask */
-void StartDisplayTask(void *argument)
-{
-  /* USER CODE BEGIN StartDisplayTask */
-  LOG_Debug("%s", __FUNCTION__);
-  /* Infinite loop */
-  for(;;)
-  {
-    osDelay(1000);
-  }
-  /* USER CODE END StartDisplayTask */
 }
 
 /**

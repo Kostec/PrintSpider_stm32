@@ -7,6 +7,7 @@
 #define CHANNEL_COUNT 2
 extern ADC_HandleTypeDef hadc1;
 uint16_t adc_buffer[CHANNEL_COUNT];
+// osThreadId_t ADC_TaskHandle;
 
 void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc)
 {
@@ -28,19 +29,27 @@ void HAL_ADC_ErrorCallback(ADC_HandleTypeDef* hadc)
 
 void ADC_Init()
 {
-    xTaskCreate(ADC_Task, 
-        "ADC_Task", 
-        16*4, 
-        NULL, 
-        tskIDLE_PRIORITY + 1, 
-        NULL);
+    // const osThreadAttr_t ADC_TaskAttr = {
+    //     .name = "ADC_Task",
+    //     .stack_size = 64 * 4,
+    //     .priority = (osPriority_t) osPriorityLow,
+    // };
+    // ADC_TaskHandle = osThreadNew(ADC_Task, NULL,  &ADC_TaskAttr);
+    // configASSERT(ADC_TaskHandle);
+
+}
+
+void ADC_Handle()
+{
+    HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, CHANNEL_COUNT);
 }
 
 void ADC_Task(void *pvParameters)
 {
+    LOG_Debug("%s", __FUNCTION__);
     for(;;)
     {
-        HAL_ADC_Start_DMA(&hadc1, (uint32_t*)adc_buffer, CHANNEL_COUNT);
+        ADC_Handle();
         osDelay(20);
     }
 }

@@ -12,11 +12,6 @@
 #include "MAIN_MENU.h"
 
 osThreadId_t OLED_TaskHandle;
-const osThreadAttr_t OLED_TaskAttributes = {
-  .name = "OLED_Task",
-  .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityLow,
-};
 
 HAL_StatusTypeDef I2C_MemWrite(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
@@ -103,13 +98,19 @@ void ProcessOLED()
 
 void OLED_Init()
 {
+    const osThreadAttr_t OLED_TaskAttributes = {
+      .name = "OLED_Task",
+      .stack_size = 128 * 4,
+      .priority = (osPriority_t) osPriorityLow,
+    };
     OLED_TaskHandle = osThreadNew(OLED_Task, NULL, &OLED_TaskAttributes);
-    MAIN_MENU_Init();
+    configASSERT(OLED_TaskHandle);
 }
 
 void OLED_Task(void *pvParameters)
 {
     LOG_Debug("%s", __FUNCTION__);
+    MAIN_MENU_Init();
     ssd1306_Init();
     for(;;)
     {
