@@ -12,6 +12,7 @@ typedef struct
     void (*onPress)();
 } tstMENU_ListItem;
 
+void MAIN_MENU_Init();
 void MAIN_MENU_Draw();
 
 #endif // MAIN_MENU_H
