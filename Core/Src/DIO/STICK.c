@@ -1,61 +1,80 @@
 #include "DIO/STICK.h"
 #include "main.h"
-#include "stm32f4xx_hal.h"
-#include "cmsis_os.h"
 #include "LOG/LOG.h"
+#include "DIO/ADC.h"
+#include "EVHD/EVHD.h"
 
-#define CHANNEL_COUNT 2
-extern ADC_HandleTypeDef hadc1;
 static tstStick STICK__instance = {0};
-uint32_t adc_buffer[CHANNEL_COUNT];
+static bool STICK__stateChanged = false;
 
-typedef enum {
-    Idle,
-    Scanning,
-    Scanned
-} tenDMAStatus;
+bool STICK_getStateChanged()
+{
+    return STICK__stateChanged;
+}
 
-static tenDMAStatus status;
+tstStickAxis STICK__ADCtoAxis(uint16_t value)
+{
+    tstStickAxis stick;
+    stick.value = value;
+    if (value < 1024)
+    {
+        stick.direction = -1;
+    }
+    else 
+    {
+        stick.direction = 1;
+    }
 
-void HAL_ADC_ConvCpltCallback(ADC_HandleTypeDef* hadc) {
-    if (hadc == &hadc1) {
-        // adc_buffer[0..CHANNEL_COUNT-1] готовы
-        STICK__instance.X = (int32_t)adc_buffer[0] - (int32_t)2048;
-        STICK__instance.Y = (int32_t)adc_buffer[1] - (int32_t)2048;
+    if ((value >= 2176 && value < 4064)
+        || (value >= 32 && value < 1920))
+    {
+        stick.state = HalfCrossed;
+    }
+    else if ((value >= 4064 && value <= 4096)
+        || (value >= 0 && value < 32))
+    {
+        stick.state = Full;
+    }
+    else
+    {
+        stick.state = Idle;
+        stick.direction = 0;
+    }
+    return stick;
+}
+
+void STICK__readADC(tstStickAxis* axis, uint16_t value)
+{
+    tstStickAxis readAxis = STICK__ADCtoAxis(value);
+
+    axis->value = readAxis.value;
+    if (axis->state != readAxis.state
+        || axis->direction != readAxis.direction
+    )
+    {
+        axis->direction = readAxis.direction;
+        axis->state = readAxis.state;
+        // TODO: Send Event
+        STICK__stateChanged = true;
+        EVHD_sendEvent(EVHD_STICK_StateChanged);
+    }
+    else
+    {
+        STICK__stateChanged = false;
     }
 }
 
 void STICK_Init()
 {
-    status = Idle;
 }
 
 void STICK_Process()
 {
-    HAL_ADC_Start(&hadc1);
-    
-    if (HAL_ADC_PollForConversion(&hadc1, 10) != HAL_OK)
-    {
-        LOG_Error("%s: Poll error", __FUNCTION__);
-    }
-    else 
-    {
-        STICK__instance.X = HAL_ADC_GetValue(&hadc1);
-    }
-
-    if (HAL_ADC_PollForConversion(&hadc1, 10) != HAL_OK)
-    {
-        LOG_Error("%s: Poll error", __FUNCTION__);
-    }
-    else 
-    {
-        STICK__instance.Y = HAL_ADC_GetValue(&hadc1);
-    }
-
-    HAL_ADC_Stop(&hadc1);
-    
-    STICK__instance.SW = HAL_GPIO_ReadPin(STICK_SW_GPIO_Port, STICK_SW_Pin);
-    LOG_Debug("%s: x=%lu y=%lu sw=%u", __FUNCTION__, STICK__instance.X, STICK__instance.Y, STICK__instance.SW);
+    STICK__readADC(&STICK__instance.X, ADC_GetValue(0));
+    STICK__readADC(&STICK__instance.Y, ADC_GetValue(1));
+    // LOG_Debug("%s: X={dir=%d state=%lu value=%lu}", __FUNCTION__, STICK__instance.X.direction, STICK__instance.X.state, STICK__instance.X.value);
+    // LOG_Debug("%s: Y={dir=%d state=%lu value=%lu}", __FUNCTION__, STICK__instance.Y.direction, STICK__instance.Y.state, STICK__instance.Y.value);
+    STICK__instance.SW = !HAL_GPIO_ReadPin(STICK_SW_GPIO_Port, STICK_SW_Pin);
 }
 
 tstStick STICK_GetStick()

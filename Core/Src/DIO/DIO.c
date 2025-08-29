@@ -15,6 +15,7 @@ static PCF8574_Data _data;
 
 void DIO_Init()
 {
+    STICK_Init();
     i2cTxSem = xSemaphoreCreateBinary();
     configASSERT(i2cTxSem);
     xSemaphoreGive(i2cTxSem);
@@ -22,9 +23,6 @@ void DIO_Init()
     i2cRxSem = xSemaphoreCreateBinary();
     configASSERT(i2cRxSem);
     xSemaphoreGive(i2cRxSem);
-
-    // logQueueHandle = xQueueCreate(LOG_QUEUE_DEPTH, sizeof(LogMessage_t));
-    // configASSERT(logQueueHandle);
 
     xTaskCreate(DIO_Task, 
         "DIO_Task", 
@@ -78,7 +76,7 @@ void DIO_ReadPins()
         }
         vTaskDelay(1);
     }
-    LOG_Debug("%s: Receive OK", __FUNCTION__);
+    // LOG_Debug("%s: Receive OK", __FUNCTION__);
 }
 
 void DIO_Task(void *pvParameters)
@@ -91,8 +89,8 @@ void DIO_Task(void *pvParameters)
     DIO_WritePins(_data);
     for (;;) {
         DIO_ReadPins();
-        LOG_Debug("%s: 0x%x", __FUNCTION__, _data.byte);
+        // LOG_Debug("%s: 0x%x", __FUNCTION__, _data.byte);
         STICK_Process();
-        vTaskDelay(500);
+        vTaskDelay(20);
     }
 }

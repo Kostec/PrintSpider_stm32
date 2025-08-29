@@ -104,6 +104,7 @@ void ProcessOLED()
 void OLED_Init()
 {
     OLED_TaskHandle = osThreadNew(OLED_Task, NULL, &OLED_TaskAttributes);
+    MAIN_MENU_Init();
 }
 
 void OLED_Task(void *pvParameters)

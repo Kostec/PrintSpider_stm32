@@ -39,7 +39,11 @@
         "main_menu.h": "c",
         "ssd1306.h": "c",
         "menu_resources.h": "c",
-        "ssd1306_tests.h": "c"
+        "ssd1306_tests.h": "c",
+        "type_traits": "c",
+        "adc.h": "c",
+        "stick.h": "c",
+        "stdbool.h": "c"
     },
 
     "cmake.buildDirectory": "build/",
