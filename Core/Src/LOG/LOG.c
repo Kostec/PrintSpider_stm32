@@ -1,7 +1,7 @@
 #include "LOG/LOG.h"
 #include <stdio.h>
 #include <stdarg.h>
-#include <FreeRTOS.h>
+#include "cmsis_os.h"
 #include <semphr.h>
 #include "stm32f4xx_hal.h"
 #include <string.h>
@@ -16,9 +16,10 @@ static const char* LOG_LogLevelString[] =
     "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"
 };
 
-SemaphoreHandle_t uartTxSem;
-SemaphoreHandle_t uartMutex;
-static QueueHandle_t logQueueHandle;
+osSemaphoreId_t uartTxSem;
+osMutexId_t uartMutex;
+osThreadId_t LOG_TaskHandle;
+static osMessageQueueId_t logQueueHandle;
 extern UART_HandleTypeDef huart2;
 
 int _write(int file, char *ptr, int len)
@@ -26,7 +27,7 @@ int _write(int file, char *ptr, int len)
   len = len > UART_TX_BUF_SIZE ? UART_TX_BUF_SIZE : len;
   
   // guarantee only one call
-  xSemaphoreTake(uartMutex, portMAX_DELAY);  
+  osMutexAcquire(uartMutex, osWaitForever);  
   uint8_t* uart_tx_buf = uart_tx_buf_number == 0 ? uart_tx_buf_0 : uart_tx_buf_1;
   uart_tx_buf_number = uart_tx_buf_number == 0 ? 1 : 0;
   memset(uart_tx_buf, 0, UART_TX_BUF_SIZE);
@@ -35,18 +36,18 @@ int _write(int file, char *ptr, int len)
   // waiting for UART ready state
   while (HAL_UART_GetState(&huart2) != HAL_UART_STATE_READY)
   {
-    taskYIELD();
+    osDelay(1);
   }
 
   // Transmit error
   if (HAL_UART_Transmit_DMA(&huart2, uart_tx_buf, len) != HAL_OK)
   {
-    xSemaphoreGive(uartMutex);
+    osMutexRelease(uartMutex);
     return -1;
   }
 
-  xSemaphoreTake(uartTxSem, portMAX_DELAY);
-  xSemaphoreGive(uartMutex);
+  osSemaphoreAcquire(uartTxSem, osWaitForever);
+  osSemaphoreRelease(uartMutex);
   return len;
 }
 
@@ -62,24 +63,29 @@ void HAL_UART_TxCpltCallback(UART_HandleTypeDef *huart)
 
 void LOG_Init(void)
 {
-    uartMutex = xSemaphoreCreateMutex();
+    const osMutexAttr_t uartMutexAttr = {.name = "LOG_uartMutex"};
+    uartMutex = osMutexNew(&uartMutexAttr);
     configASSERT(uartMutex);
 
-    uartTxSem = xSemaphoreCreateBinary();
-    configASSERT(uartTxSem);
-    xSemaphoreGive(uartTxSem);
+    const osSemaphoreAttr_t uartTxSemAttr = {.name = "LOG_uartTxSem"};
+    uartTxSem = osSemaphoreNew(1, 0, &uartTxSemAttr);
 
     LOG_SetLogLevel(LOG_enLogLevelTrace);
 
-    logQueueHandle = xQueueCreate(LOG_QUEUE_DEPTH, sizeof(LogMessage_t));
+    const osMessageQueueAttr_t logQueueHandleAttr = {
+        .name="logQueueHandle",
+    };
+    logQueueHandle = osMessageQueueNew(LOG_QUEUE_DEPTH, sizeof(LogMessage_t), &logQueueHandleAttr);
+    // xQueueCreate(LOG_QUEUE_DEPTH, sizeof(LogMessage_t));
     configASSERT(logQueueHandle);
 
-    xTaskCreate(LoggerTask, 
-        "Logger", 
-        1024, 
-        NULL, 
-        tskIDLE_PRIORITY + 1, 
-        NULL);
+    osThreadAttr_t LOG_TaskAttr = {
+        .name = "LOG_Task",
+        .stack_size = 512 * 4,
+        .priority = (osPriority_t) osPriorityLow,
+    };
+    LOG_TaskHandle = osThreadNew(LOG_Task, NULL,  &LOG_TaskAttr);
+    configASSERT(LOG_TaskHandle);
 }
 
 const char* LogLevelString(LOG_tenLogLevel logLevel)
@@ -149,7 +155,7 @@ void LOG_Log(LOG_tenLogLevel level, const char *format, ...)
     }
 
     // 4) Отправляем
-    xQueueSend(logQueueHandle, &msg, 0);
+    osMessageQueuePut(logQueueHandle, &msg, 0, 0);
 }
 
 LOG_tenLogLevel LOG_GetLogLevel()
@@ -162,14 +168,14 @@ void LOG_SetLogLevel(LOG_tenLogLevel logLevel)
     LOG_ActiveLogLevel = logLevel;
 }
 
-void LoggerTask(void *pvParameters)
+void LOG_Task(void *pvParameters)
 {
     LogMessage_t msg;
     // size_t len;
 
     for (;;) {
         // ждём новый лог (блокируемся здесь)
-        if (xQueueReceive(logQueueHandle, &msg, portMAX_DELAY) == pdPASS) {
+        if (osMessageQueueGet(logQueueHandle, &msg, NULL, osWaitForever) == osOK) {
             printf(msg.buf);
         }
     }

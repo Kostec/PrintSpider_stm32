@@ -4,7 +4,11 @@
 #include "DIO/ADC.h"
 #include "EVHD/EVHD.h"
 
-static tstStick STICK__instance = {0};
+static tstStick STICK__instance = {
+    .X = {.state = Idle, .direction = 0},
+    .Y = {.state = Idle, .direction = 0},
+    .SW = 0
+};
 static bool STICK__stateChanged = false;
 
 bool STICK_getStateChanged()
@@ -43,7 +47,7 @@ tstStickAxis STICK__ADCtoAxis(uint16_t value)
     return stick;
 }
 
-void STICK__readADC(tstStickAxis* axis, uint16_t value)
+bool STICK__readADC(tstStickAxis* axis, uint16_t value)
 {
     tstStickAxis readAxis = STICK__ADCtoAxis(value);
 
@@ -54,13 +58,11 @@ void STICK__readADC(tstStickAxis* axis, uint16_t value)
     {
         axis->direction = readAxis.direction;
         axis->state = readAxis.state;
-        // TODO: Send Event
-        STICK__stateChanged = true;
-        EVHD_sendEvent(EVHD_STICK_StateChanged);
+        return true;
     }
     else
     {
-        STICK__stateChanged = false;
+        return false;
     }
 }
 
@@ -70,11 +72,20 @@ void STICK_Init()
 
 void STICK_Process()
 {
-    STICK__readADC(&STICK__instance.X, ADC_GetValue(0));
-    STICK__readADC(&STICK__instance.Y, ADC_GetValue(1));
-    // LOG_Debug("%s: X={dir=%d state=%lu value=%lu}", __FUNCTION__, STICK__instance.X.direction, STICK__instance.X.state, STICK__instance.X.value);
-    // LOG_Debug("%s: Y={dir=%d state=%lu value=%lu}", __FUNCTION__, STICK__instance.Y.direction, STICK__instance.Y.state, STICK__instance.Y.value);
+    if (STICK__readADC(&STICK__instance.X, ADC_GetValue(0)))
+    {
+        LOG_Debug("%s: X={dir=%d state=%lu value=%lu}", __FUNCTION__, STICK__instance.X.direction, STICK__instance.X.state, STICK__instance.X.value);
+        EVHD_sendEvent(EVHD_STICK_XStateChanged);
+    }
+    if(STICK__readADC(&STICK__instance.Y, ADC_GetValue(1)))
+    {
+        LOG_Debug("%s: Y={dir=%d state=%lu value=%lu}", __FUNCTION__, STICK__instance.Y.direction, STICK__instance.Y.state, STICK__instance.Y.value);
+        EVHD_sendEvent(EVHD_STICK_YStateChanged);
+    }
     STICK__instance.SW = !HAL_GPIO_ReadPin(STICK_SW_GPIO_Port, STICK_SW_Pin);
+
+
+    // LOG_Debug("%s: SW=%u", __FUNCTION__, STICK__instance.SW);
 }
 
 tstStick STICK_GetStick()

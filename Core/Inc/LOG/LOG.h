@@ -58,6 +58,6 @@ void LOG_SetLogLevel(LOG_tenLogLevel logLevel);
 /// @brief Logger loop task
 /// @param pvParameters task parameters
 /// @return None
-void LoggerTask(void *pvParameters);
+void LOG_Task(void *pvParameters);
 
 #endif  //LOG_H
