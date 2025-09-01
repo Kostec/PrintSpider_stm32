@@ -3,6 +3,9 @@
 #include "LOG/LOG.h"
 #include "DIO/ADC.h"
 #include "EVHD/EVHD.h"
+#include <stdbool.h>
+
+#define STICK__debounceValue (5)
 
 static tstStick STICK__instance = {
     .X = {.state = Idle, .direction = 0},
@@ -10,6 +13,40 @@ static tstStick STICK__instance = {
     .SW = 0
 };
 static bool STICK__stateChanged = false;
+
+static uint8_t STICK__debounceCounter = STICK__debounceValue;
+
+void STICK__debounceSW()
+{
+    static uint8_t oldSW = 0;
+    static uint8_t newSW = 0;
+    static bool debouncing = false; 
+
+    oldSW = STICK__instance.SW;
+    newSW = !HAL_GPIO_ReadPin(STICK_SW_GPIO_Port, STICK_SW_Pin);
+
+    if (newSW != oldSW)
+    {
+        if (STICK__debounceCounter == 0 && !debouncing)
+        {
+            STICK__debounceCounter = STICK__debounceValue;
+            debouncing = true;
+            return;
+        }
+
+        STICK__debounceCounter--;
+        if (STICK__debounceCounter == 0 && debouncing)
+        {
+            STICK__instance.SW = newSW;
+            EVHD_sendEvent(EVHD_STICK_SWStateChanged);
+            debouncing = false;
+            return;
+        }
+
+    }
+
+    STICK__instance.SW = oldSW;
+}
 
 bool STICK_getStateChanged()
 {
@@ -20,30 +57,22 @@ tstStickAxis STICK__ADCtoAxis(uint16_t value)
 {
     tstStickAxis stick;
     stick.value = value;
-    if (value < 1024)
+    if (value < 1920)
     {
         stick.direction = -1;
+        stick.state = Move;
     }
-    else 
+    else if (value >= 2176)
     {
         stick.direction = 1;
-    }
-
-    if ((value >= 2176 && value < 4064)
-        || (value >= 32 && value < 1920))
-    {
-        stick.state = HalfCrossed;
-    }
-    else if ((value >= 4064 && value <= 4096)
-        || (value >= 0 && value < 32))
-    {
-        stick.state = Full;
+        stick.state = Move;
     }
     else
     {
         stick.state = Idle;
         stick.direction = 0;
     }
+
     return stick;
 }
 
@@ -82,7 +111,9 @@ void STICK_Process()
         LOG_Debug("%s: Y={dir=%d state=%lu value=%lu}", __FUNCTION__, STICK__instance.Y.direction, STICK__instance.Y.state, STICK__instance.Y.value);
         EVHD_sendEvent(EVHD_STICK_YStateChanged);
     }
-    STICK__instance.SW = !HAL_GPIO_ReadPin(STICK_SW_GPIO_Port, STICK_SW_Pin);
+
+    
+    STICK__debounceSW();
 
 
     // LOG_Debug("%s: SW=%u", __FUNCTION__, STICK__instance.SW);

@@ -5,10 +5,8 @@
 
 typedef enum {
     Idle,
-    HalfCrossed,
-    HalfHold,
-    Full,
-    FullHold,
+    Move,
+    Hold,
 } tenStickAxisState;
 
 typedef struct {

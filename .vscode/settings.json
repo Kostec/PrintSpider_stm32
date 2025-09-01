@@ -44,7 +44,10 @@
         "adc.h": "c",
         "stick.h": "c",
         "stdbool.h": "c",
-        "evhd.h": "c"
+        "evhd.h": "c",
+        "sd.h": "c",
+        "semphr.h": "c",
+        "stdio.h": "c"
     },
 
     "cmake.buildDirectory": "build/",

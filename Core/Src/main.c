@@ -32,6 +32,7 @@
 #include "DIO/ADC.h"
 #include "OLED/OLED.h"
 #include "EVHD/EVHD.h"
+#include "SD/SD.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -68,15 +69,8 @@ DMA_HandleTypeDef hdma_usart2_tx;
 osThreadId_t defaultTaskHandle;
 const osThreadAttr_t defaultTask_attributes = {
   .name = "defaultTask",
-  .stack_size = 256 * 4,
-  .priority = (osPriority_t) osPriorityHigh,
-};
-/* Definitions for printTask */
-osThreadId_t printTaskHandle;
-const osThreadAttr_t printTask_attributes = {
-  .name = "printTask",
   .stack_size = 128 * 4,
-  .priority = (osPriority_t) osPriorityNormal,
+  .priority = (osPriority_t) osPriorityHigh,
 };
 /* Definitions for spi3_sem */
 osSemaphoreId_t spi3_semHandle;
@@ -102,7 +96,6 @@ static void MX_SPI3_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_ADC1_Init(void);
 void StartDefaultTask(void *argument);
-void StartPrintTask02(void *argument);
 
 /* USER CODE BEGIN PFP */
 
@@ -218,7 +211,7 @@ int main(void)
   /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
-  HAL_Init();
+;  HAL_Init();
 
   /* USER CODE BEGIN Init */
 
@@ -276,15 +269,13 @@ int main(void)
   /* creation of defaultTask */
   defaultTaskHandle = osThreadNew(StartDefaultTask, NULL, &defaultTask_attributes);
 
-  /* creation of printTask */
-  printTaskHandle = osThreadNew(StartPrintTask02, NULL, &printTask_attributes);
-
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   EVHD_Init();
   ADC_Init();
   DIO_Init();
   OLED_Init();
+  SD_Init();
   /* USER CODE END RTOS_THREADS */
 
   /* USER CODE BEGIN RTOS_EVENTS */
@@ -637,51 +628,6 @@ static void MX_GPIO_Init(void)
 /* USER CODE END 4 */
 
 /* USER CODE BEGIN Header_StartDefaultTask */
-
-void SD_loop()
-{
-  static uint8_t mounted = 0;
-  if (!mounted)
-  {
-    FRESULT res = f_mount(&USERFatFS, USERPath, 1);
-    if (res != FR_OK)
-    {
-      LOG_Debug("%s: SD card not found. Error: %d", __FUNCTION__, res);
-    }
-    else
-    {
-      LOG_Debug("%s: SD card is available", __FUNCTION__);
-      mounted = 1;
-    }
-  }
-  else
-  {
-    // uint32_t freeClusters;
-    // FATFS* pUSERFatFS = &USERFatFS;
-    // LOG_Debug("%s: read free clusters", __FUNCTION__);
-    // f_getfree(USERPath, &freeClusters, &pUSERFatFS);
-    // osDelay(50);
-    // LOG_Debug("%s: Free clusters=%lu", __FUNCTION__, freeClusters);
-    DIR dir;
-    FILINFO fno;
-    LOG_Debug("%s: opendir", __FUNCTION__);
-    FRESULT res = f_opendir(&dir, USERPath);
-    osDelay(50);
-    if (res == FR_OK) {
-        LOG_Debug("%s: readdir", __FUNCTION__);
-        while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0]) {
-          LOG_Debug("%s: filename=%s", __FUNCTION__, fno.fname);
-          osDelay(50);
-        }
-        osDelay(50);
-        f_closedir(&dir);
-        osDelay(50);
-    }
-    else {
-      mounted = 0;
-    }
-  }
-}
 /**
   * @brief  Function implementing the defaultTask thread.
   * @param  argument: Not used
@@ -695,32 +641,13 @@ void StartDefaultTask(void *argument)
   osDelay(2000);
   for(;;)
   {
-    SD_loop();
-    osDelay(3000);
-  }
-  /* USER CODE END 5 */
-}
-
-/* USER CODE BEGIN Header_StartPrintTask02 */
-/**
-* @brief Function implementing the printTask thread.
-* @param argument: Not used
-* @retval None
-*/
-/* USER CODE END Header_StartPrintTask02 */
-void StartPrintTask02(void *argument)
-{
-  /* USER CODE BEGIN StartPrintTask02 */
-  /* Infinite loop */
-  for(;;)
-  {
-    LOG_Debug("%s: TogglePin", __FUNCTION__);
+    // LOG_Debug("%s: TogglePin", __FUNCTION__);
     HAL_GPIO_TogglePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin);
     // PRINT_setup();
     // PRINT_print();
     osDelay(1000);
   }
-  /* USER CODE END StartPrintTask02 */
+  /* USER CODE END 5 */
 }
 
 /**
