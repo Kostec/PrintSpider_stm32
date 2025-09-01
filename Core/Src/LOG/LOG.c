@@ -9,8 +9,8 @@
 #define UART_TX_BUF_SIZE 256
 static LOG_tenLogLevel LOG_ActiveLogLevel;
 static uint8_t uart_tx_buf_number = 0;;
-uint8_t uart_tx_buf_0[UART_TX_BUF_SIZE];
-uint8_t uart_tx_buf_1[UART_TX_BUF_SIZE];
+static uint8_t uart_tx_buf_0[UART_TX_BUF_SIZE];
+static uint8_t uart_tx_buf_1[UART_TX_BUF_SIZE];
 static const char* LOG_LogLevelString[] = 
 {
     "CRITICAL", "ERROR", "WARNING", "INFO", "DEBUG", "TRACE"
@@ -175,7 +175,8 @@ void LOG_Task(void *pvParameters)
 
     for (;;) {
         // ждём новый лог (блокируемся здесь)
-        if (osMessageQueueGet(logQueueHandle, &msg, NULL, osWaitForever) == osOK) {
+        if (osMessageQueueGet(logQueueHandle, &msg, NULL, osWaitForever) == osOK)
+        {
             printf(msg.buf);
         }
     }

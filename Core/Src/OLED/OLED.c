@@ -9,9 +9,10 @@
 
 #include "LOG/LOG.h"
 #include "main.h" // ErrorHandler declaration
+#include "MENU/MENU.h"
 #include "MAIN_MENU.h"
 
-osThreadId_t OLED_TaskHandle;
+static osThreadId_t OLED_TaskHandle;
 
 HAL_StatusTypeDef I2C_MemWrite(uint16_t DevAddress, uint16_t MemAddress, uint16_t MemAddSize, uint8_t *pData, uint16_t Size)
 {
@@ -63,58 +64,32 @@ extern const unsigned char garfield_128x64 [];
 
 void ProcessOLED()
 {
-  static uint8_t b = 0;
   ssd1306_Fill(Black);
-  MAIN_MENU_Draw();
-  // if (b == 0)
-  // {
-  //   LOG_Debug("%s: Hello, OLDED! Fill", __FUNCTION__);
-  //   ssd1306_SetCursor(3, 3);
-  //   ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
-  //   ssd1306_FillRectangle(110, 0, 125, 15, White);
-  //   ssd1306_FillCircle(20, 28, 10, White);
-  // }
-  // else if (b == 1)
-  // {
-  //   ssd1306_SetCursor(3, 3);
-  //   LOG_Debug("%s: Hello, OLDED! Empty", __FUNCTION__);
-  //   ssd1306_WriteString("Hello, OLED!", Font_7x10, White);
-  //   ssd1306_DrawRectangle(110, 0, 125, 15, White);
-  //   ssd1306_DrawCircle(20, 28, 10, White);
-  // }
-  // else if (b == 2)
-  // {
-  //   // ssd1306_TestDrawBitmap();
-  //   LOG_Debug("%s: Garfield", __FUNCTION__);
-  //   ssd1306_Fill(White);
-  //   ssd1306_DrawBitmap(0,16,garfield_128x64,128,64,Black);
-  //   ssd1306_UpdateScreen();
-  // }
-
-  b++;
-  b = b > 2 ? 0 : b;
+  MENU_Draw();
   ssd1306_UpdateScreen();
 }
 
 void OLED_Init()
-{
-    const osThreadAttr_t OLED_TaskAttributes = {
-      .name = "OLED_Task",
-      .stack_size = 128 * 4,
-      .priority = (osPriority_t) osPriorityLow,
-    };
-    OLED_TaskHandle = osThreadNew(OLED_Task, NULL, &OLED_TaskAttributes);
-    configASSERT(OLED_TaskHandle);
+{  
+  const osThreadAttr_t OLED_TaskAttributes = {
+    .name = "OLED_Task",
+    .stack_size = 256 * 4,
+    .priority = (osPriority_t) osPriorityLow,
+  };
+  OLED_TaskHandle = osThreadNew(OLED_Task, NULL, &OLED_TaskAttributes);
+  configASSERT(OLED_TaskHandle);
 }
 
 void OLED_Task(void *pvParameters)
 {
     LOG_Debug("%s", __FUNCTION__);
-    MAIN_MENU_Init();
+    osDelay(500);
+    MENU_Init();
+    MENU_SetActiveMenu(MAIN_MENU_GetMenu(), false);
     ssd1306_Init();
     for(;;)
     {
         ProcessOLED();
-        osDelay(1000);
+        osDelay(50);
     }
 }

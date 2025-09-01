@@ -17,5 +17,6 @@ void EVHD_Init();
 void EVHD_Task(void *pvParameters);
 void EVHD_sendEvent(tenEVHD_Event ev);
 void EVHD_subscribeEvent(fpEVHD_Handler handler);
+void EVHD_unsubscriveEvent(fpEVHD_Handler handler);
 
 #endif // EVHD_H
