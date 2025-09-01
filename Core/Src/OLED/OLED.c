@@ -83,8 +83,9 @@ void OLED_Init()
 void OLED_Task(void *pvParameters)
 {
     LOG_Debug("%s", __FUNCTION__);
-    osDelay(500);
+    osDelay(1000);
     MENU_Init();
+    MAIN_MENU_Init();
     MENU_SetActiveMenu(MAIN_MENU_GetMenu(), false);
     ssd1306_Init();
     for(;;)
