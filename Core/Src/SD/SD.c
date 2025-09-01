@@ -54,7 +54,7 @@ int SD_readDir(void (*clb)(uint8_t idx, char* str, size_t len), char* dirPath, u
     FILINFO fno;
     LOG_Debug("%s: start=%u end=%u", __FUNCTION__, start, end);
     FRESULT res = f_opendir(&dir, dirPath);
-    // osDelay(50);
+    osDelay(10);
     uint8_t count = 0;
     if (res == FR_OK)
     {
@@ -66,12 +66,12 @@ int SD_readDir(void (*clb)(uint8_t idx, char* str, size_t len), char* dirPath, u
             size_t len = strlen(fno.fname);
             clb(count-start, fno.fname, len);
             // LOG_Debug("%s: filename=%s", __FUNCTION__, fno.fname);
-            // osDelay(50);
+            osDelay(10);
             count++;
         }
-        // osDelay(50);
+        osDelay(10);
         f_closedir(&dir);
-        // osDelay(50);
+        osDelay(10);
         return count - start;
     }
     else 
@@ -95,14 +95,18 @@ bool SD_isDir(char* path)
 bool SD_dirUp(char* path)
 {
     char _path[64] = {0};
+    osDelay(10);
     strcat(_path, path);
+    osDelay(10);
     FRESULT res = f_chdir(_path);
     if (res != FR_OK)
     {
        return false;
     }
 
+    osDelay(10);
     res = f_chdir("..");
+    osDelay(10);
     if (res != FR_OK)
     {
        return false;
