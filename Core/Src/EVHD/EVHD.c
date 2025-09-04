@@ -28,7 +28,7 @@ void EVHD_Init()
     configASSERT(EVHD_Queue);
     osThreadAttr_t EVHD_TaskAttributes = {
         .name = "EVHD_Task",
-        .stack_size = 1024 * 4,
+        .stack_size = 176 * 4,
         .priority = (osPriority_t) osPriorityNormal,
       };
     EVHD_TaskHandle = osThreadNew(EVHD_Task, NULL, &EVHD_TaskAttributes);

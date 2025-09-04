@@ -81,7 +81,7 @@ void LOG_Init(void)
 
     osThreadAttr_t LOG_TaskAttr = {
         .name = "LOG_Task",
-        .stack_size = 512 * 4,
+        .stack_size = 160 * 4,
         .priority = (osPriority_t) osPriorityLow,
     };
     LOG_TaskHandle = osThreadNew(LOG_Task, NULL,  &LOG_TaskAttr);

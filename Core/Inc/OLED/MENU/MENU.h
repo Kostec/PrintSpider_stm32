@@ -5,6 +5,11 @@
 #include "MENU_RESOURCES.h"
 #include "EVHD/EVHD.h"
 
+#include "ssd1306.h"
+#include "ssd1306_fonts.h"
+#include "ssd1306_tests.h"
+#include "cmsis_os.h"
+
 typedef struct
 {
     char* text;
@@ -22,6 +27,7 @@ typedef struct
     uint8_t listItemSize;
     void (*Init)();
     void (*Deinit)();
+    void (*DrawStatusBar)();
     void (*Draw)();
     void (*ScrollDown)();
     void (*ScrollUp)(); 
@@ -40,6 +46,8 @@ void MENU_ScrollDown(tstMENU_menu* menu, tstMENU_ListItem* list);
 void MENU_ScrollUp(tstMENU_menu* menu, tstMENU_ListItem* list);
 void MENU_Exit();
 void MENU_SetParent(tstMENU_menu* parent, tstMENU_menu* child);
+bool MENU_IsUpdateNeeded();
+void MENU_Update();
 
 
 #endif // MENU_H

@@ -47,7 +47,11 @@
         "evhd.h": "c",
         "sd.h": "c",
         "semphr.h": "c",
-        "stdio.h": "c"
+        "stdio.h": "c",
+        "service_io_menu.h": "c",
+        "s_sd_menu.h": "c",
+        "ff_gen_drv.h": "c",
+        "sd_menu.h": "c"
     },
 
     "cmake.buildDirectory": "build/",

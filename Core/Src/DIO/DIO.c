@@ -55,7 +55,7 @@ void DIO_ReadPins()
         osDelay(1);
     }
   
-    if (HAL_I2C_Master_Receive(&PCF8574_I2C_PORT, PCF8574_I2C_ADDR, &_data.byte, 1, 100) != HAL_OK)
+    if (HAL_I2C_Master_Receive(&PCF8574_I2C_PORT, PCF8574_I2C_ADDR, &_data.byte, 1, 500) != HAL_OK)
     {
         LOG_Error("%s: Receive error", __FUNCTION__);
         return; // HAL_ERROR
@@ -89,4 +89,19 @@ void DIO_Task(void *pvParameters)
         STICK_Process();
         osDelay(20);
     }
+}
+
+uint8_t DIO_ReadPin(tenDIOPin pin)
+{
+    return (_data.byte >> pin) & 1;
+}
+
+void DIO_WritePin(tenDIOPin pin, uint8_t value)
+{
+    _data.byte = (_data.byte & ((0xFF) & (pin << 0))) & (pin << value);
+}
+
+PCF8574_Data DIO_ReadAll()
+{
+    return _data;
 }

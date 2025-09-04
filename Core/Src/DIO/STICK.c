@@ -57,12 +57,12 @@ tstStickAxis STICK__ADCtoAxis(uint16_t value)
 {
     tstStickAxis stick;
     stick.value = value;
-    if (value < 1920)
+    if (value < 1536)
     {
         stick.direction = -1;
         stick.state = Move;
     }
-    else if (value >= 2176)
+    else if (value >= 2560)
     {
         stick.direction = 1;
         stick.state = Move;

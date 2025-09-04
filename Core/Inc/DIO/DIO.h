@@ -6,8 +6,17 @@
 #define PCF8574_I2C_ADDR (0x20 << 1)
 #define PCF8574_I2C_PORT hi2c3
 
-void DIO_Init();
-void DIO_Task(void *pvParameters);
+typedef enum
+{
+    P0,
+    P1,
+    P2,
+    P3,
+    P4,
+    P5,
+    P6,
+    P7,
+} tenDIOPin;
 
 typedef union {
     uint8_t byte;
@@ -22,5 +31,12 @@ typedef union {
         uint8_t P7 : 1;
     } bits;
 } PCF8574_Data;
+
+void DIO_Init();
+void DIO_Task(void *pvParameters);
+uint8_t DIO_ReadPin(tenDIOPin pin);
+void DIO_WritePin(tenDIOPin pin, uint8_t value);
+
+PCF8574_Data DIO_ReadAll();
 
 #endif //DIO_H
