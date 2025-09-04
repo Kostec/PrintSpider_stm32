@@ -64,9 +64,19 @@ extern const unsigned char garfield_128x64 [];
 
 void ProcessOLED()
 {
-  ssd1306_Fill(Black);
-  MENU_Draw();
-  ssd1306_UpdateScreen();
+  static uint32_t lastUpdate = 0;
+  if (MENU_IsUpdateNeeded())
+  {
+    ssd1306_Fill(Black);
+    MENU_Draw();
+    ssd1306_UpdateScreen();
+    lastUpdate = HAL_GetTick();
+  }
+
+  if (HAL_GetTick() - lastUpdate > 1000)
+  {
+    MENU_Update();
+  }
 }
 
 void OLED_Init()

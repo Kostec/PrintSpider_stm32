@@ -7,6 +7,8 @@
 #include "LOG/LOG.h"
 #include "fatfs.h"
 
+extern FATFS USERFatFS;
+
 osThreadId_t SD_Thread;
 
 void SD_Init()
@@ -118,4 +120,16 @@ bool SD_dirUp(char* path)
     }
 
     return true;
+}
+
+tstSD_info SD_info(char* path)
+{
+    DWORD freeClusters;
+    tstSD_info sdInfo;
+    FATFS* pFATFS = &USERFatFS;
+    f_getfree(path, &freeClusters, &pFATFS);
+    sdInfo.totalSize = (uint32_t)((USERFatFS.n_fatent - 2) * USERFatFS.csize * 0.5);
+    sdInfo.freeSpace = (uint32_t)(freeClusters * USERFatFS.csize * 0.5);
+
+    return sdInfo;
 }

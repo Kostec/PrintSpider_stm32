@@ -1,10 +1,6 @@
 #include "MAIN_MENU.h"
 #include "MENU_RESOURCES.h"
 
-#include "ssd1306.h"
-#include "ssd1306_fonts.h"
-#include "ssd1306_tests.h"
-#include "cmsis_os.h"
 #include "DIO/STICK.h"
 #include "EVHD/EVHD.h"
 #include "stdio.h"
@@ -25,11 +21,11 @@ static tstMENU_ListItem MENU_mainListItems []=
         .text = "Print",
     },
     {
-        .text = "File system",
+        .text = "SD",
         .onClick = MAIN_MENU_openSdMenu
     },
     {
-        .text = "Service mode",
+        .text = "Service",
         .onClick = MAIN_MENU_openServiceMenu
     },
     {
@@ -50,37 +46,6 @@ static tstMENU_menu MAIN_MENU = {
     .listItemSize = sizeof(MENU_mainListItems)/sizeof(tstMENU_ListItem)
 };
 
-void MAIN_MENU_SD_CARD(bool show)
-{
-    if(show)
-    {
-        ssd1306_DrawBitmap(113,0, micro_sd_15x15, 15,15, White);
-    }
-    else
-    {
-        ssd1306_FillRectangle(113,0, 128, 15, Black);
-    }
-}
-
-void MAIN_MENU_USB(bool show)
-{
-    if(show)
-    {
-        ssd1306_DrawBitmap(97,0, image_data_USB_15x15, 15,15, White);
-    }
-    else
-    {
-        ssd1306_FillRectangle(97,0, 128, 15, Black);
-    }
-}
-
-void MAIN_MENU_StatusBar()
-{
-    MAIN_MENU_STICK_STATE();
-    MAIN_MENU_SD_CARD(true);
-    MAIN_MENU_USB(true);
-}
-
 void MAIN_MENU_openServiceMenu()
 {
     SERVICE_MENU_Init(&MAIN_MENU);
@@ -91,16 +56,6 @@ void MAIN_MENU_openSdMenu()
 {
     SD_MENU_Init(&MAIN_MENU);
     MENU_SetActiveMenu(SD_MENU_GetMenu(), false);
-}
-
-
-void MAIN_MENU_STICK_STATE()
-{
-    ssd1306_SetCursor(0, 0);
-    char stickState[15] = {0};
-    tstStick stick = STICK_GetStick();
-    sprintf(stickState, "%d %d %u", stick.X.state, stick.Y.state, stick.SW);
-    ssd1306_WriteString(stickState, Font_7x10, White);
 }
 
 void MAIN_MENU_drawListItem(tstMENU_ListItem listItem, uint8_t x, uint8_t y)
@@ -136,7 +91,6 @@ void MAIN_MENU_Deinit()
 
 void MAIN_MENU_Draw()
 {
-    MAIN_MENU_StatusBar();
     MAIN_MENU_List();
 }
 
