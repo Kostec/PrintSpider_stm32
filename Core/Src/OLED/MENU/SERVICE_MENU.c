@@ -1,10 +1,10 @@
-#include "SERVICE_MENU.h"
+#include "OLED/MENU/SERVICE_MENU.h"
 #include "DIO/STICK.h"
 #include "EVHD/EVHD.h"
 #include "stdio.h"
 
-#include "SERVICE_MENU/SERVICE_IO_MENU.h"
-#include "SERVICE_MENU/S_SD_MENU.h"
+#include "OLED/MENU/SERVICE_MENU/SERVICE_IO_MENU.h"
+#include "OLED/MENU/SERVICE_MENU/S_SD_MENU.h"
 
 void SERVICE_MENU__openSD();
 void SERVICE_MENU__openIO();

@@ -9,8 +9,8 @@
 
 #include "LOG/LOG.h"
 #include "main.h" // ErrorHandler declaration
-#include "MENU/MENU.h"
-#include "MAIN_MENU.h"
+#include "OLED/MENU/MENU.h"
+#include "OLED/MENU/MAIN_MENU.h"
 
 static osThreadId_t OLED_TaskHandle;
 

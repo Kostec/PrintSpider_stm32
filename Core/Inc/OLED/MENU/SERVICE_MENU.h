@@ -1,7 +1,7 @@
 #ifndef SERVICE_MENU_H
 #define SERVICE_MENU_H
 
-#include "MENU.h"
+#include "OLED/MENU/MENU.h"
 
 void SERVICE_MENU_Init(tstMENU_menu* parent);
 void SERVICE_MENU_Deinit();
