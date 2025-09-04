@@ -1,12 +1,12 @@
-#include "MAIN_MENU.h"
-#include "MENU_RESOURCES.h"
+#include "OLED/MENU/MAIN_MENU.h"
+#include "OLED/MENU/MENU_RESOURCES.h"
 
 #include "DIO/STICK.h"
 #include "EVHD/EVHD.h"
 #include "stdio.h"
 
-#include "SERVICE_MENU.h"
-#include "SD_MENU.h"
+#include "OLED/MENU/SERVICE_MENU.h"
+#include "OLED/MENU/SD_MENU.h"
 
 void MAIN_MENU_openServiceMenu();
 void MAIN_MENU_openSdMenu();
