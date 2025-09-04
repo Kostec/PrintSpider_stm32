@@ -13,6 +13,7 @@ static tstMENU_ListItem SD_listItems [SD_MAX_TMP_COUNT]= {0};
 static char SD_rawList[SD_MAX_TMP_COUNT][SD_MAX_TextString] = {0};
 static char SD_ReadDir[64] = SD_RootDir;
 static bool SD_Readed = false;
+static bool SD_WaitClb = false;
 
 static tstMENU_menu SD_MENU =
 {
@@ -23,6 +24,27 @@ static tstMENU_menu SD_MENU =
     .ScrollDown = SD_MENU_ScrollDown,
     .listItemSize = sizeof(SD_listItems)/sizeof(tstMENU_ListItem)
 };
+
+void SD_MENU__IsDirOnClick(bool res)
+{
+    if (res)
+    {
+        strcat(SD_ReadDir, SD_MENU.selectedItem->text);
+        SD_Readed = false;
+        SD_MENU.selectedItem->isSelected = false;
+        SD_MENU.selectedItemIdx = 0;
+        SD_MENU.selectedItem = &SD_listItems[0];
+        SD_MENU.selectedItem->isSelected = true;
+    }
+}
+
+void SD_MENU__DirUpOnClick(bool res)
+{
+    if(res)
+    {
+        SD_Readed = false;
+    }
+}
 
 void SD_MENU__OnClick()
 {
@@ -37,23 +59,15 @@ void SD_MENU__OnClick()
         }
         else 
         {
-            if(SD_dirUp(SD_ReadDir))
-            {
-                SD_Readed = false;
-            }
+            SD_dirUp(SD_MENU__DirUpOnClick, SD_ReadDir);
             return;
         }
         
     }
 
-
     strcpy(path, SD_ReadDir);
     strcat(path, SD_MENU.selectedItem->text);
-    if (SD_isDir(SD_MENU.selectedItem->text))
-    {
-        strcat(SD_ReadDir, SD_MENU.selectedItem->text);
-        SD_Readed = false;
-    }
+    SD_isDir(SD_MENU__IsDirOnClick, SD_MENU.selectedItem->text);
     
 }
 
@@ -61,6 +75,7 @@ void SD_MENU_Init(tstMENU_menu* parent)
 {
     SD_MENU.parent = (struct tstMENU_menu*) parent;
     SD_Readed = false;
+    SD_WaitClb = false;
     SD_MENU.selectedItemIdx = 0;
     SD_MENU.selectedItem = &SD_listItems[0];
     memset(SD_ReadDir, 0, sizeof(SD_ReadDir));
@@ -112,28 +127,35 @@ void SD_MENU_List()
     
 }
 
+void SD_MENU__ReadDirClb(int res)
+{
+    SD_MENU.listItemSize = res + 1;
+
+    if (SD_MENU.listItemSize == -1)
+    {
+        SD_Readed = false;
+    }
+    SD_Readed = true;
+
+    SD_MENU.selectedItemIdx = 0;
+    SD_MENU.selectedItem = &SD_listItems[0];
+    SD_MENU.selectedItem->isSelected = true;
+    for(uint8_t i = 1; i < SD_MENU.listItemSize; i++)
+    {
+        SD_listItems[i].text = (char*)SD_rawList[i];
+        SD_listItems[i].isSelected = false;
+    }
+
+    SD_WaitClb = false;
+}
+
 void SD_MENU_Draw()
 {
-    if (!SD_Readed)
+    if (!SD_Readed && !SD_WaitClb)
     {
         memset(SD_rawList[1], 0, (SD_MAX_TMP_COUNT-1)*SD_MAX_TextString);
-        SD_MENU.listItemSize = SD_readDir(SD__ReadDirCallback, SD_ReadDir, 0, 8) + 1;
-
-        if (SD_MENU.listItemSize == -1)
-        {
-            SD_Readed = false;
-            return;
-        }
-        SD_Readed = true;
-
-        SD_MENU.selectedItemIdx = 0;
-        SD_MENU.selectedItem = &SD_listItems[0];
-        SD_MENU.selectedItem->isSelected = true;
-        for(uint8_t i = 1; i < SD_MENU.listItemSize; i++)
-        {
-            SD_listItems[i].text = (char*)SD_rawList[i];
-            SD_listItems[i].isSelected = false;
-        }
+        SD_readDir(SD_MENU__ReadDirClb, SD__ReadDirCallback, SD_ReadDir, 0, 8);
+        SD_WaitClb = true;
     }
 
     SD_MENU_List();
