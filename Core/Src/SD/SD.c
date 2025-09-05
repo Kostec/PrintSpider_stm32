@@ -9,6 +9,7 @@
 
 typedef enum
 {
+    SD_opDirItemsCount,
     SD_opReadDir,
     SD_opIsDir,
     SD_opDirUp,
@@ -30,6 +31,33 @@ extern FATFS USERFatFS;
 osThreadId_t SD_Thread;
 osMessageQueueId_t SD_Queue;
 
+int SD__dirItemsCount(char* path)
+{
+    DIR dir;
+    FILINFO fno;
+    LOG_Debug("%s: %s", __FUNCTION__, path);
+    FRESULT res = f_opendir(&dir, path);
+    osDelay(10);
+    uint32_t count = 0;
+    if (res == FR_OK)
+    {
+        // LOG_Debug("%s: readdir", __FUNCTION__);
+        while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0])
+        {
+            osDelay(10);
+            count++;
+        }
+        osDelay(10);
+        f_closedir(&dir);
+        osDelay(10);
+        return count;
+    }
+    else 
+    {
+        return -1;
+    }
+}
+
 int SD__readDir(SD_FileReadClb clb, char* dirPath, uint8_t start, uint8_t end)
 {
     DIR dir;
@@ -43,7 +71,11 @@ int SD__readDir(SD_FileReadClb clb, char* dirPath, uint8_t start, uint8_t end)
         // LOG_Debug("%s: readdir", __FUNCTION__);
         while (f_readdir(&dir, &fno) == FR_OK && fno.fname[0])
         {
-            if (count < start) continue;
+            if (count < start)
+            {
+                count++;
+                continue;
+            }
             if (count > end) break;
             size_t len = strlen(fno.fname);
             clb(count-start, fno.fname, len);
@@ -159,6 +191,13 @@ void SD_Task(void *pvParameters)
         {
             switch (msg.opCode)
             {
+                case SD_opDirItemsCount:
+                {
+                    SD_dirItemsCountClb clb = (SD_dirItemsCountClb) msg.resClb;
+                    int res = SD__dirItemsCount(msg.path);
+                    clb(res);
+                    break;
+                }
                 case SD_opReadDir:
                 {
                     SD_readDirClb clb = (SD_readDirClb) msg.resClb;
@@ -195,6 +234,16 @@ void SD_Task(void *pvParameters)
 
         osDelay(100);
     }
+}
+
+void SD_dirItemsCount(SD_dirItemsCountClb resClb, char* dirPath)
+{
+    SD_tstMessage msg;
+    msg.opCode = SD_opDirItemsCount;
+    msg.resClb = resClb;
+    msg.path = dirPath;
+
+    osMessageQueuePut(SD_Queue, &msg, 0, 0);
 }
 
 void SD_readDir(SD_readDirClb resClb, SD_FileReadClb clb, char* dirPath, uint8_t start, uint8_t end)

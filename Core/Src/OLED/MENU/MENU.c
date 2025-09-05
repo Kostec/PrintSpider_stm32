@@ -1,4 +1,5 @@
 #include "OLED/MENU/MENU.h"
+#include "OLED/MENU/WAIT.h"
 #include "DIO/STICK.h"
 #include <stdio.h>
 
@@ -6,6 +7,7 @@
 static tstMENU_menu* MENU_activeMenu;
 extern RTC_HandleTypeDef hrtc;
 static bool IsUpdateNeeded;
+static bool MENU_isWaiting;
 void SERVICE_MENU_EventHandler(tenEVHD_Event ev);
 
 void MENU__StatusTime()
@@ -85,6 +87,11 @@ void MENU_Draw()
     {
         MENU_activeMenu->Draw();
     }
+    if (MENU_isWaiting)
+    {
+        WAIT_Draw();
+        return;
+    }
     IsUpdateNeeded = false;
 }
 
@@ -135,7 +142,7 @@ void MENU_ClickAction()
 
 void SERVICE_MENU_EventHandler(tenEVHD_Event ev)
 {
-    if (!MENU_activeMenu)
+    if (!MENU_activeMenu || MENU_isWaiting)
     {
         return;
     }
@@ -208,4 +215,13 @@ bool MENU_IsUpdateNeeded()
 void MENU_Update()
 {
     IsUpdateNeeded = true;
+}
+
+void MENU_SetWait(bool isWaiting)
+{
+    if (!MENU_isWaiting && isWaiting)
+    {
+        WAIT_Init(NULL);
+    }
+    MENU_isWaiting = isWaiting;
 }

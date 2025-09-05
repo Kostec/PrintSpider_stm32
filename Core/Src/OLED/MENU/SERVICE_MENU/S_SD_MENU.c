@@ -28,8 +28,9 @@ static tstMENU_menu S_SD_MENU = {
 
 void S_SD_MENU__SD_infoClb(tstSD_info res)
 {
-    SD_isInfoReady = true;
     memcpy(&sdInfo, &res, sizeof(tstSD_info));
+    SD_isInfoReady = true;
+    MENU_SetWait(false);
 }
 
 void S_SD_MENU_Init(tstMENU_menu* parent)
@@ -40,8 +41,6 @@ void S_SD_MENU_Init(tstMENU_menu* parent)
     S_SD_MENU.selectedItem->isSelected = true;
     SD_isInfoReady = false;
     memset(&sdInfo, 0, sizeof(tstSD_info));
-    // startLine = 0;
-    // linesCount = 0;
 }
 
 void S_SD_MENU_Deinit()
@@ -53,18 +52,16 @@ void S_SD_MENU_Draw()
 {
     if (!SD_isInfoReady)
     {
+        MENU_SetWait(true);
         SD_info(S_SD_MENU__SD_infoClb, "0:/");
     }
-    else
-    {
-        char tmp[32] = {0};
-        ssd1306_SetCursor(0, 16);
-        sprintf(tmp, "Total: %lu", sdInfo.totalSize);
-        ssd1306_WriteString(tmp, Font_7x10, White);
-        ssd1306_SetCursor(0, 26);
-        sprintf(tmp, "Free: %lu", sdInfo.freeSpace);
-        ssd1306_WriteString(tmp, Font_7x10, White);
-    }
+    char tmp[32] = {0};
+    ssd1306_SetCursor(0, 16);
+    sprintf(tmp, "Total: %lu", sdInfo.totalSize);
+    ssd1306_WriteString(tmp, Font_7x10, White);
+    ssd1306_SetCursor(0, 26);
+    sprintf(tmp, "Free: %lu", sdInfo.freeSpace);
+    ssd1306_WriteString(tmp, Font_7x10, White);
 }
 
 void S_SD_MENU_ScrollUp()
