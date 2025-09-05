@@ -5,9 +5,11 @@
 
 #include "OLED/MENU/SERVICE_MENU/SERVICE_IO_MENU.h"
 #include "OLED/MENU/SERVICE_MENU/S_SD_MENU.h"
+#include "OLED/MENU/SERVICE_MENU/S_CLOCK_MENU.h"
 
 void SERVICE_MENU__openSD();
 void SERVICE_MENU__openIO();
+void SERVICE_MENU__openClock();
 
 static tstMENU_ListItem SERVICE_MENU_listItems []= 
 {
@@ -23,6 +25,10 @@ static tstMENU_ListItem SERVICE_MENU_listItems []=
         .text = "SD",
         .onClick = SERVICE_MENU__openSD
     },
+    {
+        .text = "Date & Time",
+        .onClick = SERVICE_MENU__openClock
+    },
 };
 
 static tstMENU_menu SERVICE_MENU = {
@@ -33,6 +39,12 @@ static tstMENU_menu SERVICE_MENU = {
     .ScrollDown = SERVICE_MENU_ScrollDown,
     .listItemSize = sizeof(SERVICE_MENU_listItems)/sizeof(tstMENU_ListItem)
 };
+
+void SERVICE_MENU__openClock()
+{
+    S_CLOCK_MENU_Init(&SERVICE_MENU);
+    MENU_SetActiveMenu(S_CLOCK_MENU_GetMenu(), false);
+}
 
 void SERVICE_MENU__openSD()
 {
