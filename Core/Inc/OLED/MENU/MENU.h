@@ -48,6 +48,7 @@ void MENU_Exit();
 void MENU_SetParent(tstMENU_menu* parent, tstMENU_menu* child);
 bool MENU_IsUpdateNeeded();
 void MENU_Update();
+void MENU_SetWait(bool isWaiting);
 
 
 #endif // MENU_H
