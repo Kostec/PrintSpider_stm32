@@ -123,12 +123,12 @@ void MENU_StickAction()
     {
         MENU_activeMenu->ScrollUp();
     }
-    if (stick.X.direction == -1 && stick.X.state == Move
+    if (stick.X.direction == 1 && stick.X.state == Move
         && MENU_activeMenu->ScrollLeft)
     {
         MENU_activeMenu->ScrollLeft();
     }
-    else if (stick.X.direction == 1 && stick.X.state == Move
+    else if (stick.X.direction == -1 && stick.X.state == Move
             && MENU_activeMenu->ScrollRight)
     {
         MENU_activeMenu->ScrollRight();
@@ -153,6 +153,10 @@ void SERVICE_MENU_EventHandler(tenEVHD_Event ev)
     }
 
     if (ev == EVHD_STICK_YStateChanged)
+    {
+        MENU_StickAction();
+    }
+    else if (ev == EVHD_STICK_XStateChanged)
     {
         MENU_StickAction();
     }
