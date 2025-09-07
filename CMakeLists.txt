@@ -86,14 +86,27 @@ file(GLOB_RECURSE FatFs_MIDDLEWARE_SOURCES
     Middlewares/Third_Party/FatFs/src/*.*
 )
 
+set (USB_DEVICE_MIDDLEWARE_INCLUDES
+    Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Inc
+    Middlewares/ST/STM32_USB_Device_Library/Core/Inc
+)
+
+file(GLOB_RECURSE USB_DEVICE_MIDDLEWARE_SOURCES
+    Middlewares/ST/STM32_USB_Device_Library/Class/MSC/Src/*.*
+    Middlewares/ST/STM32_USB_Device_Library/Core/Src/*.*
+
+)
+
 set(MIDDLEWARE_INCLUDES
     ${FREE_RTOS_INCLUDES}
     ${FatFs_MIDDLEWARE_INCLUDES}
+    ${USB_DEVICE_MIDDLEWARE_INCLUDES}
 )
 
 set(MIDDLEWARE_SOURCES
     ${FREE_RTOS_SOURCES}
     ${FatFs_MIDDLEWARE_SOURCES}
+    ${USB_DEVICE_MIDDLEWARE_SOURCES}
 )
 # ==============================MIDDLEWARE END==============================
 
@@ -102,6 +115,19 @@ set(OLED_INCLUDES ssd1306)
 
 file(GLOB_RECURSE OLED_SOURCES ssd1306/*.*)
 # ==============================OLED END==============================
+
+# ==============================USB BEGIN==============================
+set(USB_INCLUDES
+    USB_DEVICE/App
+    USB_DEVICE/Target
+)
+
+file(GLOB_RECURSE USB_SOURCES
+    USB_DEVICE/App/*.*
+    USB_DEVICE/Target/*.*
+)
+# ==============================USB END==============================
+
 
 set(MCU_FLAGS
     -mcpu=cortex-m4
@@ -136,6 +162,7 @@ else()
         ${GLOB_RECURSE}
         ${MIDDLEWARE_SOURCES}
         ${OLED_SOURCES}
+        ${USB_SOURCES}
     )
 
     add_custom_command(TARGET ${PROJECT_NAME}   POST_BUILD
@@ -147,6 +174,7 @@ else()
         ${PROJECT_INCLUDES}
         ${MIDDLEWARE_INCLUDES}
         ${OLED_INCLUDES}
+        ${USB_INCLUDES}
     )
 
     set (CMAKE_EXECUTABLE_SUFFIX ".elf")
