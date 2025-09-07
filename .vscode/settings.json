@@ -53,7 +53,8 @@
         "ff_gen_drv.h": "c",
         "sd_menu.h": "c",
         "s_clock_menu.h": "c",
-        "menu.h": "c"
+        "menu.h": "c",
+        "usbd_printer.h": "c"
     },
 
     "cmake.buildDirectory": "build/",
