@@ -37,7 +37,7 @@ jobs:
 
       - name: Analyze with PVS-Studio
         run: |
-          cd /home/runner/work/PrintSpider_stm32/PrintSpider_stm32
+          cd /home/runner/work/PrintSpider_stm32/PrintSpider_stm32/build
           pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
 
       - name: Convert PVS report to SARIF
