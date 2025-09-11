@@ -1,18 +1,23 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "EVHD/EVHD.h"
 #include "LOG/LOG.h"
 #include "stm32f4xx_hal.h"
 #include "cmsis_os.h"
 
-#define MAX_SUBSCRIBERS  8
-static fpEVHD_Handler EVHD_handlers[MAX_SUBSCRIBERS];
+#define EVHD__MAX_SUBSCRIBERS  8
+static EVHD_fpEvHandler EVHD_handlers[EVHD__MAX_SUBSCRIBERS];
 #define EVHD_handlersSizeOf (sizeof(EVHD_handlers)/sizeof(EVHD_handlers[0]))
 
-#define EVHD_QUEUE_LEN  16
-static osMessageQueueId_t EVHD_Queue;
-osThreadId_t EVHD_TaskHandle;
+#define EVHD__QUEUE_LEN  16
+static osMessageQueueId_t EVHD__messageQueue;
+osThreadId_t EVHD__taskHandle;
 typedef struct{
-    tenEVHD_Event ev;
-} EVHD_EventMessage;
+    EVHD_tenEvent ev;
+} tstEVHD_eventMessage;
 
 osMutexId_t EVHD_sendEventMutex;
 
@@ -22,30 +27,30 @@ void EVHD_Init()
     EVHD_sendEventMutex = osMutexNew(&EVHD_sendEventMutexAttr);
 
     const osMessageQueueAttr_t EVHD_Queue_attributes = {
-        .name = "EVHD_Queue"
+        .name = "EVHD__messageQueue"
     };
-    EVHD_Queue = osMessageQueueNew(EVHD_QUEUE_LEN, sizeof(EVHD_EventMessage), &EVHD_Queue_attributes);
-    configASSERT(EVHD_Queue);
+    EVHD__messageQueue = osMessageQueueNew(EVHD__QUEUE_LEN, sizeof(tstEVHD_eventMessage), &EVHD_Queue_attributes);
+    configASSERT(EVHD__messageQueue);
     osThreadAttr_t EVHD_TaskAttributes = {
         .name = "EVHD_Task",
         .stack_size = 176 * 4,
         .priority = (osPriority_t) osPriorityNormal,
       };
-    EVHD_TaskHandle = osThreadNew(EVHD_Task, NULL, &EVHD_TaskAttributes);
-    configASSERT(EVHD_TaskHandle);
+    EVHD__taskHandle = osThreadNew(EVHD_Task, NULL, &EVHD_TaskAttributes);
+    configASSERT(EVHD__taskHandle);
 }
 
 void EVHD_Task(void *pvParameters)
 {   
-    EVHD_EventMessage ev;
+    tstEVHD_eventMessage ev;
     LOG_Debug("%s", __FUNCTION__);
     for(;;)
     {
-        if (osMessageQueueGet(EVHD_Queue, &ev, NULL, osWaitForever) == osOK)
+        if (osMessageQueueGet(EVHD__messageQueue, &ev, NULL, osWaitForever) == osOK)
         {
             for(uint8_t i = 0; i < EVHD_handlersSizeOf; i++)
             {
-                fpEVHD_Handler handler = EVHD_handlers[i];
+                EVHD_fpEvHandler handler = EVHD_handlers[i];
                 if (handler)
                 {
                     handler(ev.ev);
@@ -55,16 +60,16 @@ void EVHD_Task(void *pvParameters)
     }
 }
 
-void EVHD_sendEvent(tenEVHD_Event ev)
+void EVHD_sendEvent(EVHD_tenEvent ev)
 {
     osMutexAcquire(EVHD_sendEventMutex, osWaitForever);
     LOG_Debug("%s: %d", __FUNCTION__, ev);
-    EVHD_EventMessage msg = {.ev=ev};
-    osMessageQueuePut(EVHD_Queue, &msg, 0, 0);
+    tstEVHD_eventMessage msg = {.ev=ev};
+    osMessageQueuePut(EVHD__messageQueue, &msg, 0, 0);
     osMutexRelease(EVHD_sendEventMutex);
 }
 
-void EVHD_subscribeEvent(fpEVHD_Handler handler)
+void EVHD_subscribeEvent(EVHD_fpEvHandler handler)
 {
     for(uint8_t i = 0; i < EVHD_handlersSizeOf; i++)
     {
@@ -76,7 +81,7 @@ void EVHD_subscribeEvent(fpEVHD_Handler handler)
     }
 }
 
-void EVHD_unsubscriveEvent(fpEVHD_Handler handler)
+void EVHD_unsubscribeEvent(EVHD_fpEvHandler handler)
 {
     for(uint8_t i = 0; i < EVHD_handlersSizeOf; i++)
     {

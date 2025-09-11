@@ -1,3 +1,8 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "SD/SD.h"
 #include "LOG/LOG.h"
 
@@ -23,13 +28,13 @@ typedef struct
     uint8_t start;
     uint8_t end;
     void* resClb;
-    SD_FileReadClb fileReadClb;
+    fpSD_fileReadClb fileReadClb;
 } SD_tstMessage;
 
 
 extern FATFS USERFatFS;
-osThreadId_t SD_Thread;
-osMessageQueueId_t SD_Queue;
+osThreadId_t SD__Thread;
+osMessageQueueId_t SD__Queue;
 
 int SD__dirItemsCount(char* path)
 {
@@ -58,7 +63,7 @@ int SD__dirItemsCount(char* path)
     }
 }
 
-int SD__readDir(SD_FileReadClb clb, char* dirPath, uint8_t start, uint8_t end)
+int SD__readDir(fpSD_fileReadClb clb, char* dirPath, uint8_t start, uint8_t end)
 {
     DIR dir;
     FILINFO fno;
@@ -149,17 +154,17 @@ tstSD_info SD__info(char* path)
 void SD_Init()
 {   
     const osMessageQueueAttr_t SD_QueueAttr = {
-        .name = SD_Queue,
+        .name = SD__Queue,
     };
-    SD_Queue = osMessageQueueNew(16, sizeof(SD_tstMessage), &SD_QueueAttr);
+    SD__Queue = osMessageQueueNew(16, sizeof(SD_tstMessage), &SD_QueueAttr);
 
     const osThreadAttr_t SD_attributes = {
         .name = "SD_Task",
         .stack_size = 256 * 4,
         .priority = (osPriority_t) osPriorityHigh,
       };
-      SD_Thread = osThreadNew(SD_Task, NULL, &SD_attributes);
-    configASSERT(SD_Thread);
+      SD__Thread = osThreadNew(SD_Task, NULL, &SD_attributes);
+    configASSERT(SD__Thread);
 }
 
 void SD_Deinit()
@@ -187,41 +192,41 @@ void SD_Task(void *pvParameters)
                 mounted = 1;
             }
         }
-        if (osMessageQueueGet(SD_Queue, &msg, NULL, 10) == osOK)
+        if (osMessageQueueGet(SD__Queue, &msg, NULL, 10) == osOK)
         {
             switch (msg.opCode)
             {
                 case SD_opDirItemsCount:
                 {
-                    SD_dirItemsCountClb clb = (SD_dirItemsCountClb) msg.resClb;
+                    fpSD_dirItemsCountClb clb = (fpSD_dirItemsCountClb) msg.resClb;
                     int res = SD__dirItemsCount(msg.path);
                     clb(res);
                     break;
                 }
                 case SD_opReadDir:
                 {
-                    SD_readDirClb clb = (SD_readDirClb) msg.resClb;
+                    fpSD_readDirClb clb = (fpSD_readDirClb) msg.resClb;
                     int res = SD__readDir(msg.fileReadClb, msg.path, msg.start, msg.end);
                     clb(res);
                     break;
                 }
                 case  SD_opIsDir:
                 {
-                    SD_isDirClb clb = (SD_isDirClb) msg.resClb;
+                    fpSD_isDirClb clb = (fpSD_isDirClb) msg.resClb;
                     bool res = SD__isDir(msg.path);
                     clb(res);
                     break;
                 }
                 case SD_opDirUp:
                 {
-                    SD_dirUpClb clb = (SD_dirUpClb) msg.resClb;
+                    fpSD_dirUpClb clb = (fpSD_dirUpClb) msg.resClb;
                     bool res = SD__dirUp(msg.path);
                     clb(res);
                     break;
                 }
                 case SD_opInfo:
                 {
-                    SD_InfoClb clb = (SD_InfoClb) msg.resClb;
+                    fpSD_InfoClb clb = (fpSD_InfoClb) msg.resClb;
                     tstSD_info res = SD__info(msg.path);
                     clb(res);
                     break;
@@ -236,17 +241,17 @@ void SD_Task(void *pvParameters)
     }
 }
 
-void SD_dirItemsCount(SD_dirItemsCountClb resClb, char* dirPath)
+void SD_dirItemsCount(fpSD_dirItemsCountClb resClb, char* dirPath)
 {
     SD_tstMessage msg;
     msg.opCode = SD_opDirItemsCount;
     msg.resClb = resClb;
     msg.path = dirPath;
 
-    osMessageQueuePut(SD_Queue, &msg, 0, 0);
+    osMessageQueuePut(SD__Queue, &msg, 0, 0);
 }
 
-void SD_readDir(SD_readDirClb resClb, SD_FileReadClb clb, char* dirPath, uint8_t start, uint8_t end)
+void SD_readDir(fpSD_readDirClb resClb, fpSD_fileReadClb clb, char* dirPath, uint8_t start, uint8_t end)
 {
    SD_tstMessage msg;
    msg.opCode = SD_opReadDir;
@@ -256,32 +261,32 @@ void SD_readDir(SD_readDirClb resClb, SD_FileReadClb clb, char* dirPath, uint8_t
    msg.start = start;
    msg.end = end;
 
-   osMessageQueuePut(SD_Queue, &msg, 0, 0);
+   osMessageQueuePut(SD__Queue, &msg, 0, 0);
 }
 
-void SD_isDir(SD_isDirClb resClb, char* path)
+void SD_isDir(fpSD_isDirClb resClb, char* path)
 {
     SD_tstMessage msg;
     msg.opCode = SD_opIsDir;
     msg.resClb = resClb;
     msg.path = path;
-    osMessageQueuePut(SD_Queue, &msg, 0, 0);
+    osMessageQueuePut(SD__Queue, &msg, 0, 0);
 }
 
-void SD_dirUp(SD_dirUpClb resClb, char* path)
+void SD_dirUp(fpSD_dirUpClb resClb, char* path)
 {
     SD_tstMessage msg;
     msg.opCode = SD_opDirUp;
     msg.resClb = resClb;
     msg.path = path;
-    osMessageQueuePut(SD_Queue, &msg, 0, 0);
+    osMessageQueuePut(SD__Queue, &msg, 0, 0);
 }
 
-void SD_info(SD_InfoClb resClb, char* path)
+void SD_info(fpSD_InfoClb resClb, char* path)
 {
     SD_tstMessage msg;
     msg.opCode = SD_opInfo;
     msg.resClb = resClb;
     msg.path = path;
-    osMessageQueuePut(SD_Queue, &msg, 0, 0);
+    osMessageQueuePut(SD__Queue, &msg, 0, 0);
 }

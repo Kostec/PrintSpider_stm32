@@ -1,3 +1,8 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "DIO/STICK.h"
 #include "main.h"
 #include "LOG/LOG.h"
@@ -7,7 +12,7 @@
 
 #define STICK__debounceValue (5)
 
-static tstStick STICK__instance = {
+static STICK_tstStick STICK__instance = {
     .X = {.state = Idle, .direction = 0},
     .Y = {.state = Idle, .direction = 0},
     .SW = 0
@@ -53,9 +58,9 @@ bool STICK_getStateChanged()
     return STICK__stateChanged;
 }
 
-tstStickAxis STICK__ADCtoAxis(uint16_t value)
+STICK_tstAxis STICK__ADCtoAxis(uint16_t value)
 {
-    tstStickAxis stick;
+    STICK_tstAxis stick;
     stick.value = value;
     if (value < 1536)
     {
@@ -76,9 +81,9 @@ tstStickAxis STICK__ADCtoAxis(uint16_t value)
     return stick;
 }
 
-bool STICK__readADC(tstStickAxis* axis, uint16_t value)
+bool STICK__readADC(STICK_tstAxis* axis, uint16_t value)
 {
-    tstStickAxis readAxis = STICK__ADCtoAxis(value);
+    STICK_tstAxis readAxis = STICK__ADCtoAxis(value);
 
     axis->value = readAxis.value;
     if (axis->state != readAxis.state
@@ -119,7 +124,7 @@ void STICK_Process()
     // LOG_Debug("%s: SW=%u", __FUNCTION__, STICK__instance.SW);
 }
 
-tstStick STICK_GetStick()
+STICK_tstStick STICK_GetStick()
 {
     return STICK__instance;
 }

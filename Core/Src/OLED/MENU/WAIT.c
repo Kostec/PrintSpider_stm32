@@ -1,3 +1,8 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "OLED/MENU/WAIT.h"
 
 static uint32_t stateStart = 0;
@@ -10,15 +15,15 @@ static uint8_t yc = 24+16;
 static uint16_t startAngle = 360;
 static uint16_t endAngle = 360;
 
-static tstMENU_menu WAIT = {
+static MENU_tstMenu WAIT = {
     .Init = WAIT_Init,
     .Deinit = WAIT_Deinit,
     .Draw = WAIT_Draw,
 };
 
-void WAIT_Init(tstMENU_menu* parent)
+void WAIT_Init(MENU_tstMenu* parent)
 {
-    WAIT.parent = (struct tstMENU_menu*) parent;
+    WAIT.parent = (struct MENU_tstMenu*) parent;
     stateStart = HAL_GetTick();
     startAngle = 300;
 } 
@@ -52,7 +57,7 @@ void WAIT_Draw()
     MENU_Update();
 }
 
-tstMENU_menu* WAIT_GetMenu()
+MENU_tstMenu* WAIT_GetMenu()
 {
     return &WAIT;
 }

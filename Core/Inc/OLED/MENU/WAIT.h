@@ -1,11 +1,20 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #ifndef WAIT_H
 #define WAIT_H
 
 #include "OLED/MENU/MENU.h"
 
-void WAIT_Init(tstMENU_menu* parent);
+/*
+ * The module handles UI for wait animation popup
+*/
+
+void WAIT_Init(MENU_tstMenu* parent);
 void WAIT_Deinit();
 void WAIT_Draw();
-tstMENU_menu* WAIT_GetMenu();
+MENU_tstMenu* WAIT_GetMenu();
 
 #endif // WAIT_H

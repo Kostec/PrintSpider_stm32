@@ -1,14 +1,19 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "OLED/MENU/MENU.h"
 #include "OLED/MENU/WAIT.h"
 #include "DIO/STICK.h"
 #include <stdio.h>
 
 
-static tstMENU_menu* MENU_activeMenu;
+static MENU_tstMenu* MENU__activeMenu;
 extern RTC_HandleTypeDef hrtc;
-static bool IsUpdateNeeded;
-static bool MENU_isWaiting;
-void SERVICE_MENU_EventHandler(tenEVHD_Event ev);
+static bool MENU__isUpdateNeeded;
+static bool MENU__isWaiting;
+void MENU__EventHandler(EVHD_tenEvent ev);
 
 void MENU__StatusTime()
 {
@@ -49,9 +54,9 @@ void MENU__StatusUSB(bool show)
 
 void MENU__DrawStatusBar()
 {
-    if (MENU_activeMenu->DrawStatusBar)
+    if (MENU__activeMenu->DrawStatusBar)
     {
-        MENU_activeMenu->DrawStatusBar();
+        MENU__activeMenu->DrawStatusBar();
     }
     else
     {
@@ -63,93 +68,93 @@ void MENU__DrawStatusBar()
 
 void MENU_Init()
 {
-    // MENU_activeMenu = NULL;
-    EVHD_subscribeEvent(SERVICE_MENU_EventHandler);
-    IsUpdateNeeded = true;
+    // MENU__activeMenu = NULL;
+    EVHD_subscribeEvent(MENU__EventHandler);
+    MENU__isUpdateNeeded = true;
 }
 
 void MENU_Denit()
 {
-    // MENU_activeMenu = NULL;
-    EVHD_unsubscriveEvent(SERVICE_MENU_EventHandler);
+    // MENU__activeMenu = NULL;
+    EVHD_unsubscribeEvent(MENU__EventHandler);
 }
 
 void MENU_Draw()
 {
-    if (!IsUpdateNeeded)
+    if (!MENU__isUpdateNeeded)
     {
         return;
     }
 
     MENU__DrawStatusBar();
 
-    if (MENU_activeMenu)
+    if (MENU__activeMenu)
     {
-        MENU_activeMenu->Draw();
+        MENU__activeMenu->Draw();
     }
-    if (MENU_isWaiting)
+    if (MENU__isWaiting)
     {
         WAIT_Draw();
         return;
     }
-    IsUpdateNeeded = false;
+    MENU__isUpdateNeeded = false;
 }
 
-void MENU_SetActiveMenu(tstMENU_menu* menu, bool deinitOld)
+void MENU_SetActiveMenu(MENU_tstMenu* menu, bool deinitOld)
 {
     if (deinitOld)
     {
-        MENU_activeMenu->Deinit();
+        MENU__activeMenu->Deinit();
     }
-    MENU_activeMenu = menu;
+    MENU__activeMenu = menu;
     MENU_Update();
 }
 
-tstMENU_menu* MENU_GetActiveMenu()
+MENU_tstMenu* MENU_GetActiveMenu()
 {
-    return MENU_activeMenu;
+    return MENU__activeMenu;
 }
 
 void MENU_StickAction()
 {
-    tstStick stick = STICK_GetStick();
+    STICK_tstStick stick = STICK_GetStick();
     if (stick.Y.direction == -1 && stick.Y.state == Move
-        && MENU_activeMenu->ScrollDown)
+        && MENU__activeMenu->ScrollDown)
     {
-        MENU_activeMenu->ScrollDown();
+        MENU__activeMenu->ScrollDown();
     }
     else if (stick.Y.direction == 1 && stick.Y.state == Move
-            && MENU_activeMenu->ScrollUp)
+            && MENU__activeMenu->ScrollUp)
     {
-        MENU_activeMenu->ScrollUp();
+        MENU__activeMenu->ScrollUp();
     }
     if (stick.X.direction == 1 && stick.X.state == Move
-        && MENU_activeMenu->ScrollLeft)
+        && MENU__activeMenu->ScrollLeft)
     {
-        MENU_activeMenu->ScrollLeft();
+        MENU__activeMenu->ScrollLeft();
     }
     else if (stick.X.direction == -1 && stick.X.state == Move
-            && MENU_activeMenu->ScrollRight)
+            && MENU__activeMenu->ScrollRight)
     {
-        MENU_activeMenu->ScrollRight();
+        MENU__activeMenu->ScrollRight();
     }
 }
 
 void MENU_ClickAction()
 {
-    // tstStick stick = STICK_GetStick();
+    // STICK_tstStick stick = STICK_GetStick();
 }
 
-void SERVICE_MENU_EventHandler(tenEVHD_Event ev)
+void MENU__EventHandler(EVHD_tenEvent ev)
 {
-    if (!MENU_activeMenu || MENU_isWaiting)
+    if (!MENU__activeMenu || MENU__isWaiting)
     {
         return;
     }
 
-    if (MENU_activeMenu->preEventHandler)
+    if (MENU__activeMenu->preEventHandler)
     {
-        MENU_activeMenu->preEventHandler(ev);
+        MENU__activeMenu->preEventHandler(ev);
     }
 
     if (ev == EVHD_STICK_YStateChanged)
@@ -162,22 +167,22 @@ void SERVICE_MENU_EventHandler(tenEVHD_Event ev)
     }
     else if (ev == EVHD_STICK_SWStateChanged)
     {
-        tstStick stick = STICK_GetStick();
-        if (stick.SW == 1 && MENU_activeMenu->selectedItem && MENU_activeMenu->selectedItem->onClick)
+        STICK_tstStick stick = STICK_GetStick();
+        if (stick.SW == 1 && MENU__activeMenu->selectedItem && MENU__activeMenu->selectedItem->onClick)
         {
 
-            MENU_activeMenu->selectedItem->onClick();
+            MENU__activeMenu->selectedItem->onClick();
         }
     }
 
-    if (MENU_activeMenu->postEventHandler)
+    if (MENU__activeMenu->postEventHandler)
     {
-        MENU_activeMenu->postEventHandler(ev);
+        MENU__activeMenu->postEventHandler(ev);
     }
 
 }
 
-void MENU_ScrollDown(tstMENU_menu* menu, tstMENU_ListItem* list)
+void MENU_ScrollDown(MENU_tstMenu* menu, MENU_tstListItem* list)
 {
     if (menu->selectedItemIdx + 1 < menu->listItemSize)
     {
@@ -189,7 +194,7 @@ void MENU_ScrollDown(tstMENU_menu* menu, tstMENU_ListItem* list)
     MENU_Update();
 }
 
-void MENU_ScrollUp(tstMENU_menu* menu, tstMENU_ListItem* list)
+void MENU_ScrollUp(MENU_tstMenu* menu, MENU_tstListItem* list)
 {
     if (menu->selectedItemIdx - 1 >= 0)
     {
@@ -203,29 +208,29 @@ void MENU_ScrollUp(tstMENU_menu* menu, tstMENU_ListItem* list)
 
 void MENU_Exit()
 {
-    MENU_SetActiveMenu((tstMENU_menu*)MENU_activeMenu->parent, true);
+    MENU_SetActiveMenu((MENU_tstMenu*)MENU__activeMenu->parent, true);
 }
 
-void MENU_SetParent(tstMENU_menu* parent, tstMENU_menu* child)
+void MENU_SetParent(MENU_tstMenu* parent, MENU_tstMenu* child)
 {
-    child->parent = (struct tstMENU_menu*) parent;
+    child->parent = (struct MENU_tstMenu*) parent;
 }
 
 bool MENU_IsUpdateNeeded()
 {
-    return IsUpdateNeeded;
+    return MENU__isUpdateNeeded;
 }
 
 void MENU_Update()
 {
-    IsUpdateNeeded = true;
+    MENU__isUpdateNeeded = true;
 }
 
 void MENU_SetWait(bool isWaiting)
 {
-    if (!MENU_isWaiting && isWaiting)
+    if (!MENU__isWaiting && isWaiting)
     {
         WAIT_Init(NULL);
     }
-    MENU_isWaiting = isWaiting;
+    MENU__isWaiting = isWaiting;
 }

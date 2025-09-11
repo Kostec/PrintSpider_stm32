@@ -1,0 +1,7 @@
+Apache-2.0 Licensed work by Kostec.
+Copyright 2025 Kostec.
+
+Included third-party components:
+ - stm32-ssd1306 (MIT License) — https://github.com/afiskon/stm32-ssd1306
+ - FreeRTOS - Amazon.com, Inc
+ - FatSF

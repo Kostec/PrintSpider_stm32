@@ -1,11 +1,16 @@
-#include "OLED/MENU/SERVICE_MENU/SERVICE_IO_MENU.h"
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
+#include "OLED/MENU/SERVICE_MENU/S_IO_MENU.h"
 #include "DIO/DIO.h"
 #include "DIO/ADC.h"
 #include "DIO/STICK.h"
 #include <stdio.h>
 #include <string.h>
 
-static tstMENU_ListItem S_IO_MENU_listItems []= 
+static MENU_tstListItem S_IO_MENU_listItems []= 
 {
     {
         .text = "../",
@@ -13,23 +18,23 @@ static tstMENU_ListItem S_IO_MENU_listItems []=
     },
 };
 
-static tstMENU_menu S_IO_MENU =
+static MENU_tstMenu S_IO_MENU =
 {
     .Init = S_IO_MENU_Init,
     .Deinit = S_IO_MENU_Deinit,
     .Draw = S_IO_MENU_Draw,
     .ScrollUp = S_IO_MENU_ScrollUp,
     .ScrollDown = S_IO_MENU_ScrollDown,
-    .listItemSize = sizeof(S_IO_MENU_listItems)/sizeof(tstMENU_ListItem)
+    .listItemSize = sizeof(S_IO_MENU_listItems)/sizeof(MENU_tstListItem)
 };
 
 static char lines[16][32] = {0};
 static uint8_t startLine = 0;
 static uint8_t linesCount = 0;
 
-void S_IO_MENU_Init(tstMENU_menu* parent)
+void S_IO_MENU_Init(MENU_tstMenu* parent)
 {
-    S_IO_MENU.parent = (struct tstMENU_menu*) parent;
+    S_IO_MENU.parent = (struct MENU_tstMenu*) parent;
     S_IO_MENU.selectedItemIdx = 0;
     S_IO_MENU.selectedItem = &S_IO_MENU_listItems[0];
     S_IO_MENU.selectedItem->isSelected = true;
@@ -50,7 +55,7 @@ void S_IO_MENU__PrepareLines()
     strcat(line, "DIO:");
 
     line = lines[1];
-    PCF8574_Data dioData = DIO_ReadAll();
+    DIO_tstPCF8574_Data dioData = DIO_ReadAll();
     sprintf(line, "%d %d %d %d %d %d %d %d",
         dioData.bits.P0,
         dioData.bits.P1,
@@ -69,7 +74,7 @@ void S_IO_MENU__PrepareLines()
     line = lines[4];
     strcat(line, "Stick:");
     line = lines[5];
-    tstStick stick = STICK_GetStick();
+    STICK_tstStick stick = STICK_GetStick();
     sprintf(line, "X: %d %d %lu", stick.X.direction, stick.X.state, stick.X.value);
     line = lines[6];
     sprintf(line, "Y: %d %d %lu", stick.Y.direction, stick.Y.state, stick.Y.value);
@@ -107,7 +112,7 @@ void S_IO_MENU_ScrollDown()
     }
 }
 
-tstMENU_menu* S_IO_MENU_GetMenu()
+MENU_tstMenu* S_IO_MENU_GetMenu()
 {
     return &S_IO_MENU;
 }

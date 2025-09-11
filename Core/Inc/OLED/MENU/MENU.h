@@ -1,3 +1,8 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #ifndef MENU_H
 #define MENU_H
 
@@ -10,6 +15,10 @@
 #include "ssd1306_tests.h"
 #include "cmsis_os.h"
 
+/*
+ * The module is abstraction for all UI menues handling in OLED
+*/
+
 typedef struct
 {
     char* text;
@@ -17,12 +26,12 @@ typedef struct
     void (*onClick)();
     void (*onDoubleClick)();
     void (*onPress)();
-} tstMENU_ListItem;
+} MENU_tstListItem;
 
 typedef struct 
 {   
-    struct tstMENU_menu* parent;
-    tstMENU_ListItem* selectedItem;
+    struct MENU_tstMenu* parent;
+    MENU_tstListItem* selectedItem;
     int selectedItemIdx;
     uint8_t listItemSize;
     void (*Init)();
@@ -33,19 +42,19 @@ typedef struct
     void (*ScrollUp)(); 
     void (*ScrollRight)();
     void (*ScrollLeft)(); 
-    void (*preEventHandler)(tenEVHD_Event ev);
-    void (*postEventHandler)(tenEVHD_Event ev);
-} tstMENU_menu;
+    void (*preEventHandler)(EVHD_tenEvent ev);
+    void (*postEventHandler)(EVHD_tenEvent ev);
+} MENU_tstMenu;
 
 void MENU_Init();
 void MENU_Denit();
 void MENU_Draw();
-void MENU_SetActiveMenu(tstMENU_menu* menu, bool deinitOld);
-tstMENU_menu* MENU_GetActiveMenu();
-void MENU_ScrollDown(tstMENU_menu* menu, tstMENU_ListItem* list);
-void MENU_ScrollUp(tstMENU_menu* menu, tstMENU_ListItem* list);
+void MENU_SetActiveMenu(MENU_tstMenu* menu, bool deinitOld);
+MENU_tstMenu* MENU_GetActiveMenu();
+void MENU_ScrollDown(MENU_tstMenu* menu, MENU_tstListItem* list);
+void MENU_ScrollUp(MENU_tstMenu* menu, MENU_tstListItem* list);
 void MENU_Exit();
-void MENU_SetParent(tstMENU_menu* parent, tstMENU_menu* child);
+void MENU_SetParent(MENU_tstMenu* parent, MENU_tstMenu* child);
 bool MENU_IsUpdateNeeded();
 void MENU_Update();
 void MENU_SetWait(bool isWaiting);
