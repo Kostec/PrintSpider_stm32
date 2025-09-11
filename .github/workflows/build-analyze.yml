@@ -63,7 +63,12 @@ jobs:
           build/*.bin
           build/*.hex
           build/*.elf
-
+    
+    - name: Analyze with PVS-Studio
+      run: |
+        cd build
+        pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
+        
     - name: Convert PVS report to SARIF
       if: always()
       run:  plog-converter PVS.json -t sarif -o pvs-report.sarif
