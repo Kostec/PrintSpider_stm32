@@ -64,6 +64,39 @@ jobs:
           build/*.hex
           build/*.elf
 
+    - name: Convert PVS report to SARIF
+      if: always()
+      run:  plog-converter PVS.json -t sarif -o pvs-report.sarif
+
+    - name: Convert report
+      if: always()
+      run: |
+        plog-converter PVS.json -t json -n relative -R toRelative -r $PWD
+        plog-converter relative.json -t sarif -n pvs-report -r file://
+
+    - name: Publish report
+      if: always()
+      uses: github/codeql-action/upload-sarif@v3
+      with:
+        sarif_file: pvs-report.sarif
+        category: PVS-Studio
+
+    - name: Commit dependency caches
+      env:
+        BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+      run: |
+        git config user.name 'github-actions[bot]'
+        git config user.email 'github-actions[bot]@users.noreply.github.com'
+
+        git add .pvs-studio
+
+        if ! git diff --cached --quiet; then
+          git commit -m "[skip actions] PVS-Studio dependency caches"
+          git pull --rebase origin "$BRANCH_NAME"
+          git push origin HEAD:"$BRANCH_NAME"
+        else
+          echo "No changes to commit, skipping push"
+        fi
 
 
 
