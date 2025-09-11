@@ -61,7 +61,7 @@ jobs:
         run: cmake --preset PrintSpider_stm32
 
       - name: Build Firmware under PVS-Studio
-        run: pvs-studio-analyzer credentials "${{ secrets.PVS_STUDIO_CREDENTIALS }}" trace -- cmake --build --preset build-fw
+        run: pvs-studio-analyzer trace -- cmake --build --preset build-fw
 
       - name: Upload firmware artifacts
         uses: actions/upload-artifact@v4
