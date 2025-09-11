@@ -20,13 +20,13 @@ jobs:
 
     steps:
       - name: Checkout repository
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
       - name: Restore ARM toolchain cache
         id: cache-toolchain
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: toolchain
           key: ${{ runner.os }}-arm-toolchain-v14
@@ -64,7 +64,7 @@ jobs:
         run: pvs-studio-analyzer trace -- cmake --build --preset build-fw
 
       - name: Upload firmware artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: build-output-${{ github.sha }}
           path: |
