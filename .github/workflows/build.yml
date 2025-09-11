@@ -11,17 +11,7 @@ jobs:
     - name: Checkout repository
       uses: actions/checkout@v4
     
-    - name: Restore ARM toolchain cache
-      id: cache-toolchain
-      uses: actions/cache@v4
-      with:
-        path: toolchain
-        key: ${{ runner.os }}-arm-toolchain-v14
-        restore-keys: |
-          ${{ runner.os }}-arm-toolchain-
-
     - name: Download and extract ARM toolchain
-      if: steps.cache-toolchain.outputs.cache-hit != 'true'
       run: |
         curl -L https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz \
           -o toolchain.tar.xz
