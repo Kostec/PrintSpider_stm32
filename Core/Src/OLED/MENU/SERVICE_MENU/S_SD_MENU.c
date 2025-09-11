@@ -1,3 +1,8 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "OLED/MENU/SERVICE_MENU/S_SD_MENU.h"
 #include "SD/SD.h"
 #include "stdio.h"
@@ -8,7 +13,7 @@
 // static uint8_t linesCount = 0;
 
 static bool SD_isInfoReady = false;
-static tstMENU_ListItem S_SD_MENU_listItems []= 
+static MENU_tstListItem S_SD_MENU_listItems []= 
 {
     {
         .text = "../",
@@ -17,13 +22,13 @@ static tstMENU_ListItem S_SD_MENU_listItems []=
 };
 tstSD_info sdInfo;
 
-static tstMENU_menu S_SD_MENU = {
+static MENU_tstMenu S_SD_MENU = {
     .Init = S_SD_MENU_Init,
     .Deinit = S_SD_MENU_Deinit,
     .Draw = S_SD_MENU_Draw,
     .ScrollUp = S_SD_MENU_ScrollUp,
     .ScrollDown = S_SD_MENU_ScrollDown,
-    .listItemSize = sizeof(S_SD_MENU_listItems)/sizeof(tstMENU_ListItem)
+    .listItemSize = sizeof(S_SD_MENU_listItems)/sizeof(MENU_tstListItem)
 };
 
 void S_SD_MENU__SD_infoClb(tstSD_info res)
@@ -33,9 +38,9 @@ void S_SD_MENU__SD_infoClb(tstSD_info res)
     MENU_SetWait(false);
 }
 
-void S_SD_MENU_Init(tstMENU_menu* parent)
+void S_SD_MENU_Init(MENU_tstMenu* parent)
 {
-    S_SD_MENU.parent = (struct tstMENU_menu*) parent;
+    S_SD_MENU.parent = (struct MENU_tstMenu*) parent;
     S_SD_MENU.selectedItemIdx = 0;
     S_SD_MENU.selectedItem = &S_SD_MENU_listItems[0];
     S_SD_MENU.selectedItem->isSelected = true;
@@ -74,7 +79,7 @@ void S_SD_MENU_ScrollDown()
 
 }
 
-tstMENU_menu* S_SD_MENU_GetMenu()
+MENU_tstMenu* S_SD_MENU_GetMenu()
 {
     return &S_SD_MENU;
 }

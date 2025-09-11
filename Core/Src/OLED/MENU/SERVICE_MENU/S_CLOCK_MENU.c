@@ -1,3 +1,8 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "OLED/MENU/SERVICE_MENU/S_CLOCK_MENU.h"
 #include <stdio.h>
 #include <string.h>
@@ -22,7 +27,7 @@ static S_CLOCK_MENU_State S_CLOCK_state;
 void S_CLOCK__onTimeClick();
 void S_CLOCK__onDateClick();
 
-static tstMENU_ListItem S_CLOCK_listItems [] =
+static MENU_tstListItem S_CLOCK_listItems [] =
 {
     {
         .text = "..",
@@ -38,7 +43,7 @@ static tstMENU_ListItem S_CLOCK_listItems [] =
     }
 };
 
-static tstMENU_menu S_CLOCK_MENU =
+static MENU_tstMenu S_CLOCK_MENU =
 {
     .Init = S_CLOCK_MENU_Init,
     .Deinit = S_CLOCK_MENU_Deinit,
@@ -47,7 +52,7 @@ static tstMENU_menu S_CLOCK_MENU =
     .ScrollDown = S_CLOCK_MENU_ScrollDown,
     .ScrollLeft = S_CLOCK_MENU_ScrollLeft,
     .ScrollRight = S_CLOCK_MENU_ScrollRight,
-    .listItemSize = sizeof(S_CLOCK_listItems)/sizeof(tstMENU_ListItem)
+    .listItemSize = sizeof(S_CLOCK_listItems)/sizeof(MENU_tstListItem)
 };
 
 void S_CLOCK__onTimeClick()
@@ -68,10 +73,10 @@ void S_CLOCK__onDateClick()
     }
 }
 
-void S_CLOCK_MENU_Init(tstMENU_menu* parent)
+void S_CLOCK_MENU_Init(MENU_tstMenu* parent)
 {
-    S_CLOCK_MENU.parent = (struct tstMENU_menu*) parent;
-    for(uint8_t i = 0; i < sizeof(S_CLOCK_listItems)/sizeof(tstMENU_ListItem); i++)
+    S_CLOCK_MENU.parent = (struct MENU_tstMenu*) parent;
+    for(uint8_t i = 0; i < sizeof(S_CLOCK_listItems)/sizeof(MENU_tstListItem); i++)
     {
         S_CLOCK_listItems->isSelected = false;
     }
@@ -91,7 +96,7 @@ void S_CLOCK_MENU_Deinit()
 
 }
 
-void S_CLOCK_MENU__drawListItem(tstMENU_ListItem listItem, uint8_t x, uint8_t y)
+void S_CLOCK_MENU__drawListItem(MENU_tstListItem listItem, uint8_t x, uint8_t y)
 {
     ssd1306_SetCursor(x, y);
     ssd1306_WriteString(listItem.text, Font_7x10, listItem.isSelected ? Black : White);
@@ -183,7 +188,7 @@ void S_CLOCK_MENU_ScrollRight()
     }
 }
 
-tstMENU_menu* S_CLOCK_MENU_GetMenu()
+MENU_tstMenu* S_CLOCK_MENU_GetMenu()
 {
     return &S_CLOCK_MENU;
 }

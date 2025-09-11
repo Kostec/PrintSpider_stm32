@@ -1,5 +1,20 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #ifndef LOG_H
 #define LOG_H
+
+/*
+ * The module log date to the serial port
+*/
+
+/* !TODO!
+    Further Ideas:
+    - Use timestamps
+    - Use file logging
+*/
 
 #define LOG_Critical(format, ...) LOG_Log(LOG_enLogLevelCritical, format, ##__VA_ARGS__)
 #define LOG_Error(format, ...) LOG_Log(LOG_enLogLevelError, format, ##__VA_ARGS__)
@@ -17,12 +32,6 @@ typedef struct {
     char buf[LOG_MSG_MAX_LEN];
 } LogMessage_t;
 
-/* !TODO!
-    Further Ideas:
-    - Use timestamps
-    - Use file logging
-*/
-
 /// @brief Default log levels
 /// User can define and set own log levels in free range
 typedef enum
@@ -36,6 +45,9 @@ typedef enum
     LOG_enLogLevelTrace = 500,
 } LOG_tenLogLevel;
 
+
+/// @brief Initialize logger thread
+/// @param  
 void LOG_Init(void);
 
 /// @brief Basic function for logging

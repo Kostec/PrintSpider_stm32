@@ -26,7 +26,6 @@
 #include <string.h>
 #include "semphr.h"
 #include <Print/print.h>
-#include <LED/ws2812.h>
 #include "LOG/LOG.h"
 #include "DIO/DIO.h"
 #include "DIO/ADC.h"

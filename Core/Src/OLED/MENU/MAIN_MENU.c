@@ -1,3 +1,8 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "OLED/MENU/MAIN_MENU.h"
 #include "OLED/MENU/MENU_RESOURCES.h"
 
@@ -13,9 +18,9 @@ void MAIN_MENU_openSdMenu();
 
 void MAIN_MENU_STICK_STATE();
 void MAIN_MENU_StickAction();
-void MAIN_MENU_EventHandler(tenEVHD_Event ev);
+void MAIN_MENU_EventHandler(EVHD_tenEvent ev);
 
-static tstMENU_ListItem MENU_mainListItems []= 
+static MENU_tstListItem MENU_mainListItems []= 
 {
     {
         .text = "Print",
@@ -37,13 +42,13 @@ static tstMENU_ListItem MENU_mainListItems []=
 };
 
 // static bool showSDCard = true;
-static tstMENU_menu MAIN_MENU = {
+static MENU_tstMenu MAIN_MENU = {
     .Init = MAIN_MENU_Init,
     .Deinit = MAIN_MENU_Deinit,
     .Draw = MAIN_MENU_Draw,
     .ScrollUp = MAIN_MENU_ScrollUp,
     .ScrollDown = MAIN_MENU_ScrollDown,
-    .listItemSize = sizeof(MENU_mainListItems)/sizeof(tstMENU_ListItem)
+    .listItemSize = sizeof(MENU_mainListItems)/sizeof(MENU_tstListItem)
 };
 
 void MAIN_MENU_openServiceMenu()
@@ -58,7 +63,7 @@ void MAIN_MENU_openSdMenu()
     MENU_SetActiveMenu(SD_MENU_GetMenu(), false);
 }
 
-void MAIN_MENU_drawListItem(tstMENU_ListItem listItem, uint8_t x, uint8_t y)
+void MAIN_MENU_drawListItem(MENU_tstListItem listItem, uint8_t x, uint8_t y)
 {
     ssd1306_SetCursor(x, y);
     ssd1306_WriteString(listItem.text, Font_7x10, listItem.isSelected ? Black : White);
@@ -104,7 +109,7 @@ void MAIN_MENU_ScrollDown()
     MENU_ScrollDown(&MAIN_MENU, MENU_mainListItems);
 }
 
-tstMENU_menu* MAIN_MENU_GetMenu()
+MENU_tstMenu* MAIN_MENU_GetMenu()
 {
     return &MAIN_MENU;
 }

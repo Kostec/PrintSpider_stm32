@@ -1,7 +1,16 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #ifndef DIO_H
 #define DIO_H
 
 #include "stdint.h"
+
+/*
+ * The module handles digital I/O ports
+ */
 
 #define PCF8574_I2C_ADDR (0x20 << 1)
 #define PCF8574_I2C_PORT hi2c3
@@ -16,7 +25,7 @@ typedef enum
     P5,
     P6,
     P7,
-} tenDIOPin;
+} DIO_tenPin;
 
 typedef union {
     uint8_t byte;
@@ -30,13 +39,13 @@ typedef union {
         uint8_t P6 : 1;
         uint8_t P7 : 1;
     } bits;
-} PCF8574_Data;
+} DIO_tstPCF8574_Data;
 
 void DIO_Init();
 void DIO_Task(void *pvParameters);
-uint8_t DIO_ReadPin(tenDIOPin pin);
-void DIO_WritePin(tenDIOPin pin, uint8_t value);
+uint8_t DIO_ReadPin(DIO_tenPin pin);
+void DIO_WritePin(DIO_tenPin pin, uint8_t value);
 
-PCF8574_Data DIO_ReadAll();
+DIO_tstPCF8574_Data DIO_ReadAll();
 
 #endif //DIO_H

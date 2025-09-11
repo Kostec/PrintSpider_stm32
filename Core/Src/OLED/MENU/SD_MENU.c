@@ -1,3 +1,8 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "OLED/MENU/SD_MENU.h"
 #include "SD/SD.h"
 #include "string.h"
@@ -9,7 +14,7 @@
 #define SD_MAX_TextString (32)
 #define SD_RootDir "0:/"
 
-static tstMENU_ListItem SD_listItems [SD_MAX_TMP_COUNT]= {0};
+static MENU_tstListItem SD_listItems [SD_MAX_TMP_COUNT]= {0};
 static char SD_rawList[SD_MAX_TMP_COUNT][SD_MAX_TextString] = {0};
 static char SD_ReadDir[64] = SD_RootDir;
 static int SD_DirItemsCount = 0;
@@ -19,14 +24,14 @@ static uint8_t SD_startRead = 0;
 static uint8_t SD_endRead = 0;
 const static uint8_t SD_readStep = 8;
 
-static tstMENU_menu SD_MENU =
+static MENU_tstMenu SD_MENU =
 {
     .Init = SD_MENU_Init,
     .Deinit = SD_MENU_Deinit,
     .Draw = SD_MENU_Draw,
     .ScrollUp = SD_MENU_ScrollUp,
     .ScrollDown = SD_MENU_ScrollDown,
-    .listItemSize = sizeof(SD_listItems)/sizeof(tstMENU_ListItem)
+    .listItemSize = sizeof(SD_listItems)/sizeof(MENU_tstListItem)
 };
 
 void SD_MENU__DirItemsCount(int res)
@@ -88,9 +93,9 @@ void SD_MENU__OnClick()
     SD_isDir(SD_MENU__IsDirOnClick, SD_MENU.selectedItem->text);
 }
 
-void SD_MENU_Init(tstMENU_menu* parent)
+void SD_MENU_Init(MENU_tstMenu* parent)
 {
-    SD_MENU.parent = (struct tstMENU_menu*) parent;
+    SD_MENU.parent = (struct MENU_tstMenu*) parent;
     SD_startRead = 0;
     SD_DirItemsCount = 0;
     SD_endRead = SD_startRead + SD_readStep;
@@ -122,7 +127,7 @@ static void SD__ReadDirCallback(uint8_t idx, char* str, size_t len)
     MENU_SetWait(false);
 }
 
-void SD_MENU_drawListItem(tstMENU_ListItem listItem, uint8_t x, uint8_t y)
+void SD_MENU_drawListItem(MENU_tstListItem listItem, uint8_t x, uint8_t y)
 {
     ssd1306_SetCursor(x, y);
     ssd1306_WriteString(listItem.text, Font_7x10, listItem.isSelected ? Black : White);
@@ -213,7 +218,7 @@ void SD_MENU_ScrollDown()
 }
 
 
-tstMENU_menu* SD_MENU_GetMenu()
+MENU_tstMenu* SD_MENU_GetMenu()
 {
     return &SD_MENU;
 }

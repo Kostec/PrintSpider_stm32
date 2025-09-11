@@ -1,3 +1,8 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "LOG/LOG.h"
 #include <stdio.h>
 #include <stdarg.h>

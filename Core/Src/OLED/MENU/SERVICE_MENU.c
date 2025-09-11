@@ -1,9 +1,14 @@
+/*
+ Copyright 2025 Kostec
+ SPDX-License-Identifier: Apache-2.0
+*/
+
 #include "OLED/MENU/SERVICE_MENU.h"
 #include "DIO/STICK.h"
 #include "EVHD/EVHD.h"
 #include "stdio.h"
 
-#include "OLED/MENU/SERVICE_MENU/SERVICE_IO_MENU.h"
+#include "OLED/MENU/SERVICE_MENU/S_IO_MENU.h"
 #include "OLED/MENU/SERVICE_MENU/S_SD_MENU.h"
 #include "OLED/MENU/SERVICE_MENU/S_CLOCK_MENU.h"
 
@@ -11,7 +16,7 @@ void SERVICE_MENU__openSD();
 void SERVICE_MENU__openIO();
 void SERVICE_MENU__openClock();
 
-static tstMENU_ListItem SERVICE_MENU_listItems []= 
+static MENU_tstListItem SERVICE_MENU_listItems []= 
 {
     {
         .text = "../",
@@ -31,13 +36,13 @@ static tstMENU_ListItem SERVICE_MENU_listItems []=
     },
 };
 
-static tstMENU_menu SERVICE_MENU = {
+static MENU_tstMenu SERVICE_MENU = {
     .Init = SERVICE_MENU_Init,
     .Deinit = SERVICE_MENU_Deinit,
     .Draw = SERVICE_MENU_Draw,
     .ScrollUp = SERVICE_MENU_ScrollUp,
     .ScrollDown = SERVICE_MENU_ScrollDown,
-    .listItemSize = sizeof(SERVICE_MENU_listItems)/sizeof(tstMENU_ListItem)
+    .listItemSize = sizeof(SERVICE_MENU_listItems)/sizeof(MENU_tstListItem)
 };
 
 void SERVICE_MENU__openClock()
@@ -58,7 +63,7 @@ void SERVICE_MENU__openIO()
     MENU_SetActiveMenu(S_IO_MENU_GetMenu(), false);
 }
 
-void SERVICE_MENU_drawListItem(tstMENU_ListItem listItem, uint8_t x, uint8_t y)
+void SERVICE_MENU_drawListItem(MENU_tstListItem listItem, uint8_t x, uint8_t y)
 {
     ssd1306_SetCursor(x, y);
     ssd1306_WriteString(listItem.text, Font_7x10, listItem.isSelected ? Black : White);
@@ -86,9 +91,9 @@ void SERVICE_MENU_ScrollDown()
     MENU_ScrollDown(&SERVICE_MENU, SERVICE_MENU_listItems);
 }
 
-void SERVICE_MENU_Init(tstMENU_menu* parent)
+void SERVICE_MENU_Init(MENU_tstMenu* parent)
 {
-    SERVICE_MENU.parent = (struct tstMENU_menu*) parent;
+    SERVICE_MENU.parent = (struct MENU_tstMenu*) parent;
     SERVICE_MENU.selectedItemIdx = 0;
     SERVICE_MENU.selectedItem = &SERVICE_MENU_listItems[0];
     SERVICE_MENU.selectedItem->isSelected = true;
@@ -104,7 +109,7 @@ void SERVICE_MENU_Draw()
     SERVICE_MENU_List();
 }
 
-tstMENU_menu* SERVICE_MENU_GetMenu()
+MENU_tstMenu* SERVICE_MENU_GetMenu()
 {
     return &SERVICE_MENU;
 }

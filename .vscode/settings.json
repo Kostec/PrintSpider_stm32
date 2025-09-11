@@ -1,5 +1,4 @@
 {
-    // "cmake.configureArgs": ["-DTARGET_MCU=SLS_202_devkit"],
     "cmake.useCMakePresets": "always",
     "cortex-debug.variableUseNaturalFormat": true,
     "cortex-debug.openocdPath": "${config:openOCD_dir}/openocd.exe",
