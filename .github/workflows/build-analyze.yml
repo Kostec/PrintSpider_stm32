@@ -37,20 +37,17 @@ jobs:
 
       - name: Analyze with PVS-Studio
         run: |
-          cd build
-          # Запускаем анализ
+          cd /home/runner/work/PrintSpider_stm32/PrintSpider_stm32
           pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
 
       - name: Convert PVS report to SARIF
         if: always()
-        run: |
-          cd build
-          plog-converter PVS.json -t sarif -o pvs-report.sarif
+        run:  plog-converter PVS.json -t sarif -o pvs-report.sarif
 
       - name: Convert report
         if: always()
         run: |
-          plog-converter sPVS.json -t json -n relative -R toRelative -r $PWD
+          plog-converter PVS.json -t json -n relative -R toRelative -r $PWD
           plog-converter relative.json -t sarif -n pvs-report -r file://
 
       - name: Publish report
