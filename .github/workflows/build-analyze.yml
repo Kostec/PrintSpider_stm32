@@ -7,73 +7,144 @@ on:
 
 jobs:
   build-analyze:
-    if: github.actor != 'github-actions[bot]' &&
-      (
-        github.event_name != 'pull_request' ||
-        github.event.pull_request.head.repo.full_name == github.repository
-      )
-    runs-on: ubuntu-24.04
+    runs-on: ubuntu-latest
+
     steps:
+    - name: Checkout repository
+      uses: actions/checkout@v4
+    
+    - name: Restore ARM toolchain cache
+      id: cache-toolchain
+      uses: actions/cache@v4
+      with:
+        path: toolchain
+        key: ${{ runner.os }}-arm-toolchain-v14
+        restore-keys: |
+          ${{ runner.os }}-arm-toolchain-
 
-      - name: Check out repository code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+    - name: Download and extract ARM toolchain
+      if: steps.cache-toolchain.outputs.cache-hit != 'true'
+      run: |
+        curl -L https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz \
+          -o toolchain.tar.xz
+        mkdir -p toolchain
+        tar -xf toolchain.tar.xz -C toolchain
 
-      - name: Restore ARM toolchain cache
-        id: cache-toolchain
-        run: |
-          curl -L https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz \
-            -o toolchain.tar.xz
-          mkdir -p toolchain
-          tar -xf toolchain.tar.xz -C toolchain
+    - name: Add ARM toolchain to PATH
+      run: echo "${{ github.workspace }}/toolchain/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+    
+    - name: Verify toolchain
+      run: arm-none-eabi-gcc --version
       
-          - name: Add ARM toolchain to PATH
-            run: echo "${{ github.workspace }}/toolchain/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+    - name: Build Firmvare
+      run: |
+        cmake --preset PrintSpider_stm32
+        cmake --build --preset build-fw
+
+    - name: Artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: build-output-${{ github.sha }}
+        path: |
+          build/*.bin
+          build/*.hex
+          build/*.elf
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+# on:
+#   push:
+#     branches: [main]
+#   pull_request:
+#     branches: [main]
+
+# jobs:
+#   build-analyze:
+#     if: github.actor != 'github-actions[bot]' &&
+#       (
+#         github.event_name != 'pull_request' ||
+#         github.event.pull_request.head.repo.full_name == github.repository
+#       )
+#     runs-on: ubuntu-24.04
+#     steps:
+
+#       - name: Check out repository code
+#         uses: actions/checkout@v4
+#         with:
+#           fetch-depth: 0
+
+#       - name: Restore ARM toolchain cache
+#         id: cache-toolchain
+#         run: |
+#           curl -L https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz \
+#             -o toolchain.tar.xz
+#           mkdir -p toolchain
+#           tar -xf toolchain.tar.xz -C toolchain
+      
+#           - name: Add ARM toolchain to PATH
+#             run: echo "${{ github.workspace }}/toolchain/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
           
-          - name: Verify toolchain
-            run: arm-none-eabi-gcc --version
+#           - name: Verify toolchain
+#             run: arm-none-eabi-gcc --version
 
-      - name: Build
-        run: |
-          cmake --preset PrintSpider_stm32
-          pvs-studio-analyzer trace -- cmake --preset build-fw
+#       - name: Build
+#         run: |
+#           cmake --preset PrintSpider_stm32
+#           pvs-studio-analyzer trace -- cmake --preset build-fw
 
-      - name: Analyze with PVS-Studio
-        run: |
-          cd /home/runner/work/PrintSpider_stm32/PrintSpider_stm32/build
-          pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
+#       - name: Analyze with PVS-Studio
+#         run: |
+#           cd /home/runner/work/PrintSpider_stm32/PrintSpider_stm32/build
+#           pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
 
-      - name: Convert PVS report to SARIF
-        if: always()
-        run:  plog-converter PVS.json -t sarif -o pvs-report.sarif
+#       - name: Convert PVS report to SARIF
+#         if: always()
+#         run:  plog-converter PVS.json -t sarif -o pvs-report.sarif
 
-      - name: Convert report
-        if: always()
-        run: |
-          plog-converter PVS.json -t json -n relative -R toRelative -r $PWD
-          plog-converter relative.json -t sarif -n pvs-report -r file://
+#       - name: Convert report
+#         if: always()
+#         run: |
+#           plog-converter PVS.json -t json -n relative -R toRelative -r $PWD
+#           plog-converter relative.json -t sarif -n pvs-report -r file://
 
-      - name: Publish report
-        if: always()
-        uses: github/codeql-action/upload-sarif@v3
-        with:
-          sarif_file: pvs-report.sarif
-          category: PVS-Studio
+#       - name: Publish report
+#         if: always()
+#         uses: github/codeql-action/upload-sarif@v3
+#         with:
+#           sarif_file: pvs-report.sarif
+#           category: PVS-Studio
 
-      - name: Commit dependency caches
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
+#       - name: Commit dependency caches
+#         env:
+#           BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+#         run: |
+#           git config user.name 'github-actions[bot]'
+#           git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-          git add .pvs-studio
+#           git add .pvs-studio
 
-          if ! git diff --cached --quiet; then
-            git commit -m "[skip actions] PVS-Studio dependency caches"
-            git pull --rebase origin "$BRANCH_NAME"
-            git push origin HEAD:"$BRANCH_NAME"
-          else
-            echo "No changes to commit, skipping push"
-          fi
+#           if ! git diff --cached --quiet; then
+#             git commit -m "[skip actions] PVS-Studio dependency caches"
+#             git pull --rebase origin "$BRANCH_NAME"
+#             git push origin HEAD:"$BRANCH_NAME"
+#           else
+#             echo "No changes to commit, skipping push"
+#           fi
