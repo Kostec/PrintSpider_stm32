@@ -13,7 +13,7 @@ jobs:
         github.event.pull_request.head.repo.full_name == github.repository
       )
     runs-on: ubuntu-24.04
-    
+
     steps:
     - name: Checkout repository
       uses: actions/checkout@v4
@@ -55,70 +55,10 @@ jobs:
           build/*.hex
           build/*.elf
 
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-# on:
-#   push:
-#     branches: [main]
-#   pull_request:
-#     branches: [main]
-
-# jobs:
-#   build-analyze:
-#     if: github.actor != 'github-actions[bot]' &&
-#       (
-#         github.event_name != 'pull_request' ||
-#         github.event.pull_request.head.repo.full_name == github.repository
-#       )
-#     runs-on: ubuntu-24.04
-#     steps:
-
-#       - name: Check out repository code
-#         uses: actions/checkout@v4
-#         with:
-#           fetch-depth: 0
-
-#       - name: Restore ARM toolchain cache
-#         id: cache-toolchain
-#         run: |
-#           curl -L https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz \
-#             -o toolchain.tar.xz
-#           mkdir -p toolchain
-#           tar -xf toolchain.tar.xz -C toolchain
-      
-#           - name: Add ARM toolchain to PATH
-#             run: echo "${{ github.workspace }}/toolchain/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
-          
-#           - name: Verify toolchain
-#             run: arm-none-eabi-gcc --version
-
-#       - name: Build
-#         run: |
-#           cmake --preset PrintSpider_stm32
-#           pvs-studio-analyzer trace -- cmake --preset build-fw
-
-#       - name: Analyze with PVS-Studio
-#         run: |
-#           cd /home/runner/work/PrintSpider_stm32/PrintSpider_stm32/build
-#           pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
+    - name: Analyze with PVS-Studio
+      run: |
+        cd /home/runner/work/PrintSpider_stm32/PrintSpider_stm32/build
+        pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
 
 #       - name: Convert PVS report to SARIF
 #         if: always()
