@@ -29,14 +29,12 @@ jobs:
             https://files.pvs-studio.com/etc/viva64.list
           sudo add-apt-repository ppa:dotnet/backports
           sudo apt update
-          sudo apt-get install -y dotnet-sdk-9.0
           sudo apt install pvs-studio
-          sudo apt install pvs-studio-dotnet
           pvs-studio-analyzer credentials ${{ secrets.PVS_STUDIO_CREDENTIALS }}
 
       - name: Analyze
         run: |
-          pvs-studio-dotnet -t sast-in-ci-example.sln -o ./sast-in-ci-example.json -r --disableLicenseExpirationCheck -F -C .pvsconfig
+          pvs-studio-analyzer trace -- cmake build .
 
       - name: Convert report
         if: always()
