@@ -32,14 +32,25 @@ jobs:
           sudo apt install pvs-studio
           pvs-studio-analyzer credentials ${{ secrets.PVS_STUDIO_CREDENTIALS }}
 
-      - name: Analyze
+      - name: Build
+        run: pvs-studio-analyzer trace -- cmake build .
+
+      - name: Analyze with PVS-Studio
         run: |
-          pvs-studio-analyzer trace -- cmake build .
+          cd build
+          # Запускаем анализ
+          pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
+
+      - name: Convert PVS report to SARIF
+        if: always()
+        run: |
+          cd build
+          plog-converter PVS.json -t sarif -o pvs-report.sarif
 
       - name: Convert report
         if: always()
         run: |
-          plog-converter sast-in-ci-example.json -t json -n relative -R toRelative -r $PWD
+          plog-converter sPVS.json -t json -n relative -R toRelative -r $PWD
           plog-converter relative.json -t sarif -n pvs-report -r file://
 
       - name: Publish report
