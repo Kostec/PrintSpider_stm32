@@ -16,24 +16,37 @@ jobs:
     steps:
 
       - name: Check out repository code
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
         with:
           fetch-depth: 0
 
-      - name: Install tools
-        run: |
-          run: |
-          wget -q -O - https://files.pvs-studio.com/etc/pubkey.txt \
-            | sudo apt-key add -
-          sudo wget -O /etc/apt/sources.list.d/viva64.list \
-            https://files.pvs-studio.com/etc/viva64.list
-          sudo add-apt-repository ppa:dotnet/backports
-          sudo apt update
-          sudo apt install pvs-studio
-          pvs-studio-analyzer credentials ${{ secrets.PVS_STUDIO_CREDENTIALS }}
+      - name: Restore ARM toolchain cache
+        id: cache-toolchain
+        uses: actions/cache@v4
+        with:
+          path: toolchain
+          key: ${{ runner.os }}-arm-toolchain-v14
+          restore-keys: |
+            ${{ runner.os }}-arm-toolchain-
+      
+              - name: Download and extract ARM toolchain
+              if: steps.cache-toolchain.outputs.cache-hit != 'true'
+              run: |
+                curl -L https://developer.arm.com/-/media/Files/downloads/gnu/14.3.rel1/binrel/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi.tar.xz \
+                  -o toolchain.tar.xz
+                mkdir -p toolchain
+                tar -xf toolchain.tar.xz -C toolchain
+        
+            - name: Add ARM toolchain to PATH
+              run: echo "${{ github.workspace }}/toolchain/arm-gnu-toolchain-14.3.rel1-x86_64-arm-none-eabi/bin" >> $GITHUB_PATH
+            
+            - name: Verify toolchain
+              run: arm-none-eabi-gcc --version
 
       - name: Build
-        run: pvs-studio-analyzer trace -- cmake build .
+        run: |
+          cmake --preset PrintSpider_stm32
+          pvs-studio-analyzer trace -- cmake --preset build-fw
 
       - name: Analyze with PVS-Studio
         run: |
