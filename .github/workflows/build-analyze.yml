@@ -80,7 +80,7 @@ jobs:
             build/*.elf
 
       - name: Analyze with PVS-Studio
-        run: pvs-studio-analyzer analyze -j$(nproc) -c .pvsconfig
+        run: pvs-studio-analyzer analyze -j$(nproc) --cfg pvs.cfg
       
       - name: Convert report to SARIF
         if: always()
