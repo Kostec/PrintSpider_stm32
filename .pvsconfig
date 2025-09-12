@@ -1,3 +1,6 @@
-SourcesFilter="Core/**";"FATFS/Target/user_diskio_spi.c"
-
-ExcludedPath="Third_Party/**";"build/**";"ssd1306/**";"FATFS/**";"Drivers/STM32F4xx_HAL_Driver/Src/**";"Drivers/CMSIS/**"
+//V_ANALYSIS_PATHS skip-analysis="Third_Party/**"
+//V_ANALYSIS_PATHS skip-analysis="build/**"
+//V_ANALYSIS_PATHS skip-analysis="ssd1306/**"
+//V_ANALYSIS_PATHS skip-analysis="FATFS/**"
+//V_ANALYSIS_PATHS skip-analysis="Drivers/STM32F4xx_HAL_Driver/Src/**"
+//V_ANALYSIS_PATHS skip-analysis="Drivers/CMSIS/**"
