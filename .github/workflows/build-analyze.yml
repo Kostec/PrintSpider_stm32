@@ -93,19 +93,19 @@ jobs:
           sarif_file: pvs-report.sarif
           category: PVS-Studio
 
-      - name: Commit PVS-Studio cache
-        env:
-          BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
-        run: |
-          git config user.name 'github-actions[bot]'
-          git config user.email 'github-actions[bot]@users.noreply.github.com'
+      # - name: Commit PVS-Studio cache
+      #   env:
+      #     BRANCH_NAME: ${{ github.head_ref || github.ref_name }}
+      #   run: |
+      #     git config user.name 'github-actions[bot]'
+      #     git config user.email 'github-actions[bot]@users.noreply.github.com'
 
-          git add .pvs-studio
+      #     git add .pvs-studio
 
-          if ! git diff --cached --quiet; then
-            git commit -m "[skip actions] PVS-Studio dependency caches"
-            git pull --rebase origin "$BRANCH_NAME"
-            git push origin HEAD:"$BRANCH_NAME"
-          else
-            echo "No changes to commit, skipping push"
-          fi
+      #     if ! git diff --cached --quiet; then
+      #       git commit -m "[skip actions] PVS-Studio dependency caches"
+      #       git pull --rebase origin "$BRANCH_NAME"
+      #       git push origin HEAD:"$BRANCH_NAME"
+      #     else
+      #       echo "No changes to commit, skipping push"
+      #     fi
