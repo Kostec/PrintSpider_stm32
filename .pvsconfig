@@ -1,0 +1,12 @@
+SourcesFilter:
+  - "Core/**"
+  - "Drivers/STM32F4xx_HAL_Driver/Src/**"
+  - "Drivers/CMSIS/**"
+  - "FATFS/Target/user_diskio_spi.c"
+
+ExcludedPath:
+  - "Third_Party/**"
+  - "build/**"
+  - "Drivers/**"
+  - "ssd1306/**"
+  - "FATFS/**"
