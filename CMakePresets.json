@@ -11,7 +11,8 @@
             "cacheVariables": {
                 "CMAKE_BUILD_TYPE": "Debug",
                 "BUILD_TESTS": "OFF",
-                "CMAKE_INSTALL_PREFIX": "${sourceDir}/stm32"
+                "CMAKE_INSTALL_PREFIX": "${sourceDir}/stm32",
+                "CMAKE_EXPORT_COMPILE_COMMANDS": "ON"
             },
             "environment": {}
         },

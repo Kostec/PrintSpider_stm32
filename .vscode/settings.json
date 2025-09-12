@@ -59,4 +59,6 @@
     "cmake.buildDirectory": "build/",
     "cmake.buildBeforeRun": true,
     "cmake.configureOnOpen": true,
+    "cmake.generator": "Ninja",
+    "cmake.exportCompileCommandsFile": true,
 }
