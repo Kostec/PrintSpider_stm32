@@ -76,20 +76,17 @@ jobs:
             build/*.elf
 
       - name: Analyze with PVS-Studio
-        run: pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
+        run: pvs-studio-analyzer analyze -j$(nproc)
       
-      - name: Inspect PVS.json
-        run: cat PVS.json
-
       - name: Convert report to SARIF
         if: always()
-        run: plog-converter PVS.json -t sarif -o pvs-report.sarif
+        run: plog-converter ./build/compile_commands.json -t sarif -o ./build/pvs-report.sarif
 
       - name: Publish SARIF report
         if: always()
         uses: github/codeql-action/upload-sarif@v3
         with:
-          sarif_file: pvs-report.sarif
+          sarif_file: ./build/pvs-report.sarif
           category: PVS-Studio
 
       - name: Commit PVS-Studio cache
