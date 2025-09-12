@@ -1,5 +1,9 @@
 name: Build and PVS-Studio analysis
 
+permissions:
+  contents: read
+  security-events: write
+
 on:
   push:
     branches:
