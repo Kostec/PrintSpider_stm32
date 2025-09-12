@@ -77,6 +77,9 @@ jobs:
 
       - name: Analyze with PVS-Studio
         run: pvs-studio-analyzer analyze -j$(nproc) -o PVS.json
+      
+      - name: Inspect PVS.json
+        run: cat PVS.json
 
       - name: Convert report to SARIF
         if: always()
