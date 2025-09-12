@@ -55,7 +55,9 @@ jobs:
             https://files.pvs-studio.com/etc/viva64.list
           sudo apt update
           sudo apt install -y pvs-studio build-essential cmake
+          echo "Setup credentials"
           pvs-studio-analyzer credentials --userName Kostec_PrintSpider_stm32 --licenseKey "${{ secrets.PVS_STUDIO_CREDENTIALS }}"
+          echo "Check credentials"
           pvs-studio-analyzer lic-info
 
       - name: Configure CMake (Firmware)
