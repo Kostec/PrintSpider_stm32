@@ -1,11 +1,3 @@
-SourcesFilter:
-  - "Core/**"
-  - "FATFS/Target/user_diskio_spi.c"
+SourcesFilter="Core/**";"FATFS/Target/user_diskio_spi.c"
 
-ExcludedPath:
-  - "Third_Party/**"
-  - "build/**"
-  - "ssd1306/**"
-  - "FATFS/**"
-  - "Drivers/STM32F4xx_HAL_Driver/Src/**"
-  - "Drivers/CMSIS/**"
+ExcludedPath="Third_Party/**";"build/**";"ssd1306/**";"FATFS/**";"Drivers/STM32F4xx_HAL_Driver/Src/**";"Drivers/CMSIS/**"
