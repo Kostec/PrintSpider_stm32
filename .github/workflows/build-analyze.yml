@@ -80,7 +80,7 @@ jobs:
       
       - name: Convert report to SARIF
         if: always()
-        run: plog-converter ./build/compile_commands.json -t sarif -o ./build/pvs-report.sarif
+        run: plog-converter ./build/PVS-Studio.log -t sarif -o ./build/pvs-report.sarif
 
       - name: Publish SARIF report
         if: always()
