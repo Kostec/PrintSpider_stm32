@@ -63,10 +63,20 @@ void Error_Handler(void);
 #define STICK_SW_GPIO_Port GPIOC
 #define LED_GREEN_Pin GPIO_PIN_5
 #define LED_GREEN_GPIO_Port GPIOA
+#define MOTOR_Y_DIR_Pin GPIO_PIN_6
+#define MOTOR_Y_DIR_GPIO_Port GPIOA
+#define MOTOR_Y_STEP_Pin GPIO_PIN_7
+#define MOTOR_Y_STEP_GPIO_Port GPIOA
 #define STICK_X_Pin GPIO_PIN_0
 #define STICK_X_GPIO_Port GPIOB
 #define SPI3_CS_SD_Pin GPIO_PIN_2
 #define SPI3_CS_SD_GPIO_Port GPIOD
+#define MOTOR_X_STEP_Pin GPIO_PIN_3
+#define MOTOR_X_STEP_GPIO_Port GPIOB
+#define MOTOR_EN_Pin GPIO_PIN_4
+#define MOTOR_EN_GPIO_Port GPIOB
+#define MOTOR_X_DIR_Pin GPIO_PIN_5
+#define MOTOR_X_DIR_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 

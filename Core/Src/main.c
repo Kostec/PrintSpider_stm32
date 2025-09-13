@@ -32,6 +32,8 @@
 #include "OLED/OLED.h"
 #include "EVHD/EVHD.h"
 #include "SD/SD.h"
+#include "MOTOR/MOTOR.h"
+#include "Print/PRINTCTRL.h"
 /* USER CODE END Includes */
 
 /* Private typedef -----------------------------------------------------------*/
@@ -63,7 +65,6 @@ DMA_HandleTypeDef hdma_spi3_rx;
 DMA_HandleTypeDef hdma_spi3_tx;
 
 UART_HandleTypeDef huart2;
-UART_HandleTypeDef huart6;
 DMA_HandleTypeDef hdma_usart2_tx;
 
 /* Definitions for defaultTask */
@@ -92,7 +93,6 @@ void SystemClock_Config(void);
 static void MX_GPIO_Init(void);
 static void MX_DMA_Init(void);
 static void MX_USART2_UART_Init(void);
-static void MX_USART6_UART_Init(void);
 static void MX_SPI3_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_ADC1_Init(void);
@@ -245,7 +245,6 @@ int main(void)
   MX_GPIO_Init();
   MX_DMA_Init();
   MX_USART2_UART_Init();
-  MX_USART6_UART_Init();
   MX_SPI3_Init();
   MX_FATFS_Init();
   MX_I2C3_Init();
@@ -295,6 +294,8 @@ int main(void)
   DIO_Init();
   OLED_Init();
   SD_Init();
+  MOTORCTRL_Init();
+  PRINTCTRL_Init();
   configureTimerForRunTimeStats();
   /* USER CODE END RTOS_THREADS */
 
@@ -567,39 +568,6 @@ static void MX_USART2_UART_Init(void)
 }
 
 /**
-  * @brief USART6 Initialization Function
-  * @param None
-  * @retval None
-  */
-static void MX_USART6_UART_Init(void)
-{
-
-  /* USER CODE BEGIN USART6_Init 0 */
-
-  /* USER CODE END USART6_Init 0 */
-
-  /* USER CODE BEGIN USART6_Init 1 */
-
-  /* USER CODE END USART6_Init 1 */
-  huart6.Instance = USART6;
-  huart6.Init.BaudRate = 115200;
-  huart6.Init.WordLength = UART_WORDLENGTH_8B;
-  huart6.Init.StopBits = UART_STOPBITS_1;
-  huart6.Init.Parity = UART_PARITY_NONE;
-  huart6.Init.Mode = UART_MODE_TX_RX;
-  huart6.Init.HwFlowCtl = UART_HWCONTROL_NONE;
-  huart6.Init.OverSampling = UART_OVERSAMPLING_16;
-  if (HAL_UART_Init(&huart6) != HAL_OK)
-  {
-    Error_Handler();
-  }
-  /* USER CODE BEGIN USART6_Init 2 */
-
-  /* USER CODE END USART6_Init 2 */
-
-}
-
-/**
   * Enable DMA controller clock
   */
 static void MX_DMA_Init(void)
@@ -648,10 +616,13 @@ static void MX_GPIO_Init(void)
   __HAL_RCC_GPIOD_CLK_ENABLE();
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(LED_GREEN_GPIO_Port, LED_GREEN_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOA, LED_GREEN_Pin|MOTOR_Y_DIR_Pin|MOTOR_Y_STEP_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
   HAL_GPIO_WritePin(SPI3_CS_SD_GPIO_Port, SPI3_CS_SD_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(GPIOB, MOTOR_X_STEP_Pin|MOTOR_EN_Pin|MOTOR_X_DIR_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : STICK_SW_Pin */
   GPIO_InitStruct.Pin = STICK_SW_Pin;
@@ -659,12 +630,12 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   HAL_GPIO_Init(STICK_SW_GPIO_Port, &GPIO_InitStruct);
 
-  /*Configure GPIO pin : LED_GREEN_Pin */
-  GPIO_InitStruct.Pin = LED_GREEN_Pin;
+  /*Configure GPIO pins : LED_GREEN_Pin MOTOR_Y_DIR_Pin MOTOR_Y_STEP_Pin */
+  GPIO_InitStruct.Pin = LED_GREEN_Pin|MOTOR_Y_DIR_Pin|MOTOR_Y_STEP_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_NOPULL;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
-  HAL_GPIO_Init(LED_GREEN_GPIO_Port, &GPIO_InitStruct);
+  HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
   /*Configure GPIO pin : SPI3_CS_SD_Pin */
   GPIO_InitStruct.Pin = SPI3_CS_SD_Pin;
@@ -672,6 +643,13 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SPI3_CS_SD_GPIO_Port, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : MOTOR_X_STEP_Pin MOTOR_EN_Pin MOTOR_X_DIR_Pin */
+  GPIO_InitStruct.Pin = MOTOR_X_STEP_Pin|MOTOR_EN_Pin|MOTOR_X_DIR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
