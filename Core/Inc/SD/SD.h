@@ -29,6 +29,7 @@ typedef void (*fpSD_InfoClb) (tstSD_info res);
 void SD_Init();
 void SD_Deinit();
 void SD_Task(void *pvParameters);
+bool SD_isAvailable();
 void SD_dirItemsCount(fpSD_dirItemsCountClb resClb, char* dirPath);
 void SD_readDir(fpSD_readDirClb resClb, fpSD_fileReadClb clb, char* dirPath, uint8_t start, uint8_t end);
 void SD_isDir(fpSD_isDirClb resClb, char* path);

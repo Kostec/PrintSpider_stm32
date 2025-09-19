@@ -31,6 +31,7 @@
 #include "DIO/ADC.h"
 #include "OLED/OLED.h"
 #include "EVHD/EVHD.h"
+#include "EXHD/EXHD.h"
 #include "SD/SD.h"
 #include "MOTOR/MOTOR.h"
 #include "Print/PRINTCTRL.h"
@@ -290,6 +291,7 @@ int main(void)
   /* USER CODE BEGIN RTOS_THREADS */
   /* add threads, ... */
   EVHD_Init();
+  EXHD_Init();
   ADC_Init();
   DIO_Init();
   OLED_Init();

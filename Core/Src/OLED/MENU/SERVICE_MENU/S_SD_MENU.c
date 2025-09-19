@@ -55,6 +55,13 @@ void S_SD_MENU_Deinit()
 
 void S_SD_MENU_Draw()
 {
+    if (!SD_isAvailable())
+    {
+        ssd1306_SetCursor(0, 16);
+        ssd1306_WriteString("SD is not available!", Font_7x10, White);
+        return;
+    }
+
     if (!SD_isInfoReady)
     {
         MENU_SetWait(true);

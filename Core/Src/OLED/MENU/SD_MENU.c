@@ -181,6 +181,13 @@ void SD_MENU__ReadDirClb(int res)
 
 void SD_MENU_Draw()
 {
+    if (!SD_isAvailable())
+    {
+        ssd1306_SetCursor(0, 16);
+        ssd1306_WriteString("SD is not available!", Font_7x10, White);
+        return;
+    }
+    
     if (!SD_Readed && !SD_WaitClb)
     {
         memset(SD_rawList[1], 0, (SD_MAX_TMP_COUNT-1)*SD_MAX_TextString);
