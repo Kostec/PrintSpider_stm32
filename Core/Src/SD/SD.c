@@ -10,6 +10,7 @@
 #include "cmsis_os.h"
 #include <semphr.h>
 #include "LOG/LOG.h"
+#include "EXHD/EXHD.h"
 #include "fatfs.h"
 
 typedef enum
@@ -35,6 +36,8 @@ typedef struct
 extern FATFS USERFatFS;
 osThreadId_t SD__Thread;
 osMessageQueueId_t SD__Queue;
+bool SD__isAvailable = false;
+
 
 int SD__dirItemsCount(char* path)
 {
@@ -153,6 +156,8 @@ tstSD_info SD__info(char* path)
 
 void SD_Init()
 {   
+    SD__isAvailable = false;
+
     const osMessageQueueAttr_t SD_QueueAttr = {
         .name = SD__Queue,
     };
@@ -175,23 +180,21 @@ void SD_Deinit()
 void SD_Task(void *pvParameters)
 {
     LOG_Debug("%s", __FUNCTION__);
-    static uint8_t mounted = 0;
     SD_tstMessage msg = {0};
     for(;;)
     {
-        if (!mounted)
+        FRESULT res = f_mount(&USERFatFS, USERPath, 1);
+        if (res != FR_OK)
         {
-            FRESULT res = f_mount(&USERFatFS, USERPath, 1);
-            if (res != FR_OK)
-            {
-                LOG_Debug("%s: SD card not found. Error: %d", __FUNCTION__, res);
-            }
-            else
-            {
-                LOG_Debug("%s: SD card is available", __FUNCTION__);
-                mounted = 1;
-            }
+            SD__isAvailable = false;
+            EXHD_Raise(EXHD_SD_NotMount);
         }
+        else
+        {
+            EXHD_Reset(EXHD_SD_NotMount);
+            SD__isAvailable = true;
+        }
+
         if (osMessageQueueGet(SD__Queue, &msg, NULL, 10) == osOK)
         {
             switch (msg.opCode)
@@ -239,6 +242,11 @@ void SD_Task(void *pvParameters)
 
         osDelay(100);
     }
+}
+
+bool SD_isAvailable()
+{
+    return SD__isAvailable;
 }
 
 void SD_dirItemsCount(fpSD_dirItemsCountClb resClb, char* dirPath)

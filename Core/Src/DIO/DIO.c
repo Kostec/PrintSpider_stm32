@@ -11,6 +11,7 @@
 #include "LOG/LOG.h"
 #include "DIO/STICK.h"
 #include "DIO/ADC.h"
+#include "EXHD/EXHD.h"
 
 extern I2C_HandleTypeDef PCF8574_I2C_PORT;
 osThreadId_t DIO__thread;
@@ -38,18 +39,22 @@ void DIO_WritePins(DIO_tstPCF8574_Data data)
 
     if (HAL_I2C_Master_Transmit(&PCF8574_I2C_PORT, PCF8574_I2C_ADDR, &data.byte, 1, 100) != HAL_OK)
     {
-        LOG_Error("%s: Transmit error", __FUNCTION__);
+        EXHD_Raise(EXHD_DIO_Write);
         return; // HAL_ERROR
     }
 
     uint32_t start = HAL_GetTick();
     while (HAL_I2C_GetState(&PCF8574_I2C_PORT) != HAL_I2C_STATE_READY) {
         if ((HAL_GetTick() - start) > 100) {
-            LOG_Error("%s: Transmit timeout", __FUNCTION__);
+            EXHD_Raise(EXHD_DIO_Write);
+            EXHD_Raise(EXHD_DIO_Timeout);
             return; // HAL_TIMEOUT;
         }
         vTaskDelay(1);
     }
+
+    EXHD_Reset(EXHD_DIO_Write);
+    EXHD_Reset(EXHD_DIO_Timeout);
 
     LOG_Error("%s: Transmit OK", __FUNCTION__);
 }
@@ -62,18 +67,22 @@ void DIO_ReadPins()
   
     if (HAL_I2C_Master_Receive(&PCF8574_I2C_PORT, PCF8574_I2C_ADDR, &DIO__data.byte, 1, 500) != HAL_OK)
     {
-        LOG_Error("%s: Receive error", __FUNCTION__);
+        EXHD_Raise(EXHD_DIO_Read);
         return; // HAL_ERROR
     }
 
     uint32_t start = HAL_GetTick();
     while (HAL_I2C_GetState(&PCF8574_I2C_PORT) != HAL_I2C_STATE_READY) {
         if ((HAL_GetTick() - start) > 100) {
-            LOG_Error("%s: Receive timeout", __FUNCTION__);
+            EXHD_Raise(EXHD_DIO_Read);
+            EXHD_Raise(EXHD_DIO_Timeout);
             return; // HAL_TIMEOUT;
         }
         osDelay(1);
     }
+
+    EXHD_Reset(EXHD_DIO_Read);
+    EXHD_Reset(EXHD_DIO_Timeout);
     // LOG_Debug("%s: Receive OK", __FUNCTION__);
 }
 
