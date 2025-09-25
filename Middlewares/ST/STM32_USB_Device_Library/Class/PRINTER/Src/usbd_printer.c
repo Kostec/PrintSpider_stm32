@@ -77,13 +77,13 @@ EndBSPDependencies */
   * @}
   */
 static uint32_t usbd_PRNT_altset = 0U;
-#define PRNT_RX_DATA_SIZE  512
-
-static uint8_t PrinterRxBuffer[PRNT_RX_DATA_SIZE];
 
 /** @defgroup USBD_PRNT_Private_Defines
   * @{
   */
+  
+  #define PRNT_RX_DATA_SIZE  512
+  
 /**
   * @}
   */
@@ -119,6 +119,7 @@ uint8_t *USBD_PRNT_GetDeviceQualifierDescriptor(uint16_t *length);
 /** @defgroup USBD_PRNT_Private_Variables
   * @{
   */
+static uint8_t PrinterRxBuffer[PRNT_RX_DATA_SIZE];
 
 /* PRNT interface class callbacks structure */
 USBD_ClassTypeDef USBD_PRNT =
@@ -487,6 +488,7 @@ static uint8_t USBD_PRNT_DataOut(USBD_HandleTypeDef *pdev, uint8_t epnum)
   NAKed till the end of the application Xfer */
   ((USBD_PRNT_ItfTypeDef *)pdev->pUserData[pdev->classId])->Receive(hPRNT->RxBuffer, &hPRNT->RxLength);
 
+  USBD_LL_PrepareReceive(pdev, epnum, hPRNT->RxBuffer, PRNT_DATA_FS_OUT_PACKET_SIZE);
   return (uint8_t)USBD_OK;
 }
 

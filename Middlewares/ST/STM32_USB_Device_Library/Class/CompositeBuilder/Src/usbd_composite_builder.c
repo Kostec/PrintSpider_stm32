@@ -198,7 +198,7 @@ static void  USBD_CMPSIT_VIDEODesc(USBD_HandleTypeDef *pdev, uint32_t pConf, __I
 
 #if USBD_CMPSIT_ACTIVATE_PRINTER == 1U
 static void  USBD_CMPSIT_PRNTDesc(USBD_HandleTypeDef *pdev, uint32_t pConf, __IO uint32_t *Sze, uint8_t speed);
-extern USBD_PRNT_ItfTypeDef USBD_Printer_fops_FS;
+extern USBD_PRNT_ItfTypeDef USBD_PRNT_fops_FS;
 #endif /* USBD_CMPSIT_ACTIVATE_PRINTER == 1U */
 
 #if USBD_CMPSIT_ACTIVATE_CCID == 1U
@@ -313,7 +313,7 @@ uint8_t  USBD_CMPSIT_AddClass(USBD_HandleTypeDef *pdev,
         break;
 
       case CLASS_TYPE_PRINTER:
-        pdev->pUserData[i] = &USBD_Printer_fops_FS;
+        pdev->pUserData[i] = &USBD_PRNT_fops_FS;
         break;
       case CLASS_TYPE_NONE:
       case CLASS_TYPE_HID:
