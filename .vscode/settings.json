@@ -1,6 +1,6 @@
 {
     "cmake.useCMakePresets": "always",
-    "cortex-debug.variableUseNaturalFormat": true,
+    "cortex-debug.variableUseNaturalFormat": false,
     "cortex-debug.openocdPath": "${config:openOCD_dir}/openocd.exe",
     
     // Local environment
@@ -53,7 +53,10 @@
         "sd_menu.h": "c",
         "s_clock_menu.h": "c",
         "menu.h": "c",
-        "usbd_printer.h": "c"
+        "usbd_printer.h": "c",
+        "cstdlib": "c",
+        "usbd_composite_builder.h": "c",
+        "usbd_composite_builder_conf.h": "c"
     },
 
     "cmake.buildDirectory": "build/",
