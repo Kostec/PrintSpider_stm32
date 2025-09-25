@@ -1,8 +1,8 @@
 /**
   ******************************************************************************
-  * @file    usbd_printer_if_template.h
+  * @file    usbd_printer_if.h
   * @author  MCD Application Team
-  * @brief   Header for usbd_PRNT_if_template.c file.
+  * @brief   Header for usbd_PRNT_if.c file.
   ******************************************************************************
   * @attention
   *
@@ -17,8 +17,8 @@
   */
 
 /* Define to prevent recursive inclusion -------------------------------------*/
-#ifndef __USBD_PRNT_IF_TEMPLATE_H
-#define __USBD_PRNT_IF_TEMPLATE_H
+#ifndef __USBD_PRNT_IF_H
+#define __USBD_PRNT_IF_H
 
 #ifdef __cplusplus
 extern "C" {
@@ -30,7 +30,7 @@ extern "C" {
 /* Exported types ------------------------------------------------------------*/
 /* Exported constants --------------------------------------------------------*/
 
-extern USBD_PRNT_ItfTypeDef  USBD_Printer_fops_FS;
+extern USBD_PRNT_ItfTypeDef  USBD_PRNT_fops_FS;
 
 /* Exported macro ------------------------------------------------------------*/
 /* Exported functions ------------------------------------------------------- */

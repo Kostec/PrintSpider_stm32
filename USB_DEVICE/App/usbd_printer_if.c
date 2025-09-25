@@ -1,6 +1,6 @@
 /**
   ******************************************************************************
-  * @file    usbd_printer_if_template.c
+  * @file    usbd_printer_if.c
   * @author  MCD Application Team
   * @brief   Generic media access Layer.
   ******************************************************************************
@@ -18,6 +18,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "usbd_printer_if.h"
+#include "LOG/LOG.h"
 
 /** @addtogroup STM32_USB_DEVICE_LIBRARY
   * @{
@@ -40,6 +41,9 @@
 /** @defgroup USBD_PRNT_Private_Defines
   * @{
   */
+
+  extern USBD_HandleTypeDef hUsbDeviceFS;
+  
 /**
   * @}
   */
@@ -58,33 +62,33 @@
   * @{
   */
 
-static int8_t TEMPLATE_Init(void);
-static int8_t TEMPLATE_DeInit(void);
-static int8_t TEMPLATE_Control_req(uint8_t req, uint8_t *pbuf, uint16_t *length);
-static int8_t TEMPLATE_Receive(uint8_t *pbuf, uint32_t *Len);
+static int8_t PRNT_Init(void);
+static int8_t PRNT_DeInit(void);
+static int8_t PRNT_Control_req(uint8_t req, uint8_t *pbuf, uint16_t *length);
+static int8_t PRNT_Receive(uint8_t *pbuf, uint32_t *Len);
 
 /*printer Private function prototypes*/
-void TEMPLATE_PRNT_PageEndManager(uint8_t *Buf, uint32_t Len);
+void PRNT_PageEndManager(uint8_t *Buf, uint32_t Len);
 
-USBD_PRNT_ItfTypeDef USBD_Printer_fops_FS =
+USBD_PRNT_ItfTypeDef USBD_PRNT_fops_FS =
 {
-  TEMPLATE_Init,
-  TEMPLATE_DeInit,
-  TEMPLATE_Control_req,
-  TEMPLATE_Receive
+  PRNT_Init,
+  PRNT_DeInit,
+  PRNT_Control_req,
+  PRNT_Receive
 };
 
-static char PRNT_DEVICE_ID[] = "MFG:STM32:MDL:DIY_Printer;CMD:RAW";
+static char PRNT_DEVICE_ID[] = "MFG:STM32;MDL:DIY_Printer;CMD:RAW;CLS:PRINTER;";
 
 /* Private functions ---------------------------------------------------------*/
 
 /**
-  * @brief  TEMPLATE_Init
+  * @brief  PRNT_Init
   *         Initializes the PRNT media low layer
   * @param  None
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t TEMPLATE_Init(void)
+static int8_t PRNT_Init(void)
 {
   /*
      Add your initialization code here
@@ -93,12 +97,12 @@ static int8_t TEMPLATE_Init(void)
 }
 
 /**
-  * @brief  TEMPLATE_DeInit
+  * @brief  PRNT_DeInit
   *         DeInitializes the PRNT media low layer
   * @param  None
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t TEMPLATE_DeInit(void)
+static int8_t PRNT_DeInit(void)
 {
   /*
      Add your deinitialization code here
@@ -108,7 +112,7 @@ static int8_t TEMPLATE_DeInit(void)
 
 
 /**
-  * @brief  TEMPLATE_Receive
+  * @brief  PRNT_Receive
   *         Data received over USB OUT endpoint are sent over PRNT interface
   *         through this function.
   *
@@ -123,24 +127,29 @@ static int8_t TEMPLATE_DeInit(void)
   * @param  Len: Number of data received (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t TEMPLATE_Receive(uint8_t *Buf, uint32_t *Len)
+static int8_t PRNT_Receive(uint8_t *Buf, uint32_t *Len)
 {
-  UNUSED(Buf);
-  UNUSED(Len);
+  char _buf[64] = {0};
+  for (uint32_t i = 0; i < *Len; i++) {
+    _buf[i] = Buf[i];
+  }
+  _buf[*Len] = '\r';
+  _buf[*Len + 1] = '\n';
+  LOG_Debug("%s", _buf);
 
   return (USBD_OK);
 }
 
 
 /**
-  * @brief  TEMPLATE_Control_req
+  * @brief  PRNT_Control_req
   *         Manage the  PRNT class requests
   * @param  req: Command code
   * @param  pbuf: Buffer containing command data (request parameters)
   * @param  length: Number of data to be sent (in bytes)
   * @retval Result of the operation: USBD_OK if all operations are OK else USBD_FAIL
   */
-static int8_t TEMPLATE_Control_req(uint8_t req, uint8_t *pbuf, uint16_t *length)
+static int8_t PRNT_Control_req(uint8_t req, uint8_t *pbuf, uint16_t *length)
 {
   /* Check on the setup request value */
   switch (req)
@@ -151,7 +160,7 @@ static int8_t TEMPLATE_Control_req(uint8_t req, uint8_t *pbuf, uint16_t *length)
       pbuf[0] = (sizeof(PRNT_DEVICE_ID) - 1) >> 8;
       pbuf[1] = (sizeof(PRNT_DEVICE_ID) - 1) & 0xFF;
       memcpy(&pbuf[2], PRNT_DEVICE_ID, sizeof(PRNT_DEVICE_ID) - 1);
-      return sizeof(PRNT_DEVICE_ID) + 2;
+      *length = sizeof(PRNT_DEVICE_ID) + 2;
       break;
 
     /* Get Printer current status */
@@ -165,6 +174,10 @@ static int8_t TEMPLATE_Control_req(uint8_t req, uint8_t *pbuf, uint16_t *length)
 
     /* Printer SOFT RESET request: cleanup pending tasks */
     case PRNT_SOFT_RESET:
+      // сбросить приёмные буферы
+      USBD_PRNT_HandleTypeDef *hPRNT = (USBD_PRNT_HandleTypeDef *)hUsbDeviceFS.pClassDataCmsit[hUsbDeviceFS.classId];
+      USBD_LL_PrepareReceive(&hUsbDeviceFS, PRNT_OUT_EP, hPRNT->RxBuffer, PRNT_DATA_FS_OUT_PACKET_SIZE);
+      *length = 0;
       break;
 
     default:

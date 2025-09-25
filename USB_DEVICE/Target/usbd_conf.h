@@ -35,7 +35,8 @@
 #include "stm32f4xx_hal.h"
 
 /* USER CODE BEGIN INCLUDE */
-#define USE_USBD_COMPOSITE
+// #define USE_USBD_COMPOSITE
+#define USE_USBD_PRINTER_ONLY
 /* USER CODE END INCLUDE */
 
 /** @addtogroup USBD_OTG_DRIVER

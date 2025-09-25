@@ -66,7 +66,7 @@ USBD_HandleTypeDef hUsbDeviceFS;
 void MX_USB_DEVICE_Init(void)
 {
   /* USER CODE BEGIN USB_DEVICE_Init_PreTreatment */
-#ifndef USE_USBD_COMPOSITE
+#ifndef USE_USBD_PRINTER_ONLY
   /* USER CODE END USB_DEVICE_Init_PreTreatment */
 
   /* Init Device Library, add supported class and start the library. */
@@ -88,60 +88,28 @@ void MX_USB_DEVICE_Init(void)
   }
 
   /* USER CODE BEGIN USB_DEVICE_Init_PostTreatment */
-#else // USE_USBD_COMPOSITE
-  /* Init Device Library */
-  if (USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS) != USBD_OK)
-  {
-    Error_Handler();
-  }
+#else // USE_USBD_PRINTER_ONLY
 
-  // if (USBD_CMPSIT_Init(&hUsbDeviceFS, 0))
-  // {
-  //   Error_Handler();
-  // }
-
-  /* Регистрируем Composite класс */
-  if (USBD_RegisterClass(&hUsbDeviceFS, &USBD_CMPSIT) != USBD_OK)
-  {
-    Error_Handler();
-  }
-
-  // hUsbDeviceFS.classId++;
-  // /* Добавляем MSC */
-  // if (USBD_CMPSIT_AddClass(&hUsbDeviceFS,
-  //                         USBD_MSC_CLASS,
-  //                         CLASS_TYPE_MSC,
-  //                         0) != USBD_OK)
-  // {
-  //   Error_Handler();
-  // }
+    /* Init Device Library, add supported class and start the library. */
+    if (USBD_Init(&hUsbDeviceFS, &FS_Desc, DEVICE_FS) != USBD_OK)
+    {
+      Error_Handler();
+    }
+    if (USBD_RegisterClass(&hUsbDeviceFS, USBD_PRNT_CLASS) != USBD_OK)
+    {
+      Error_Handler();
+    }
+    if (USBD_PRNT_RegisterInterface(&hUsbDeviceFS, &USBD_PRNT_fops_FS) != USBD_OK)
+    {
+      Error_Handler();
+    }
+    if (USBD_Start(&hUsbDeviceFS) != USBD_OK)
+    {
+      Error_Handler();
+    }
   
-  // if (USBD_MSC_RegisterStorage(&hUsbDeviceFS, &USBD_Storage_Interface_fops_FS))
-  // {
-  //   Error_Handler();
-  // }
 
-  // /* Добавляем Printer */
-  // if (USBD_CMPSIT_AddClass(&hUsbDeviceFS,
-  //                         USBD_PRNT_CLASS,
-  //                         CLASS_TYPE_PRINTER,
-  //                         0) != USBD_OK)
-  // {
-  //   Error_Handler();
-  // }
-  
-  // if (USBD_PRNT_RegisterInterface(&hUsbDeviceFS, &USBD_Printer_fops_FS))
-  // {
-  //   Error_Handler();
-  // }
-
-  /* Start USB */
-  if (USBD_Start(&hUsbDeviceFS) != USBD_OK)
-  {
-    Error_Handler();
-  }
-#endif // USE_USBD_COMPOSITE
-
+#endif // USE_USBD_PRINTER_ONLY
   /* USER CODE END USB_DEVICE_Init_PostTreatment */
 }
 
