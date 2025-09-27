@@ -66,6 +66,9 @@ SPI_HandleTypeDef hspi3;
 DMA_HandleTypeDef hdma_spi3_rx;
 DMA_HandleTypeDef hdma_spi3_tx;
 
+TIM_HandleTypeDef htim1;
+DMA_HandleTypeDef hdma_tim1_up;
+
 UART_HandleTypeDef huart2;
 DMA_HandleTypeDef hdma_usart2_tx;
 
@@ -99,6 +102,7 @@ static void MX_SPI3_Init(void);
 static void MX_I2C3_Init(void);
 static void MX_ADC1_Init(void);
 static void MX_RTC_Init(void);
+static void MX_TIM1_Init(void);
 void StartDefaultTask(void *argument);
 
 /* USER CODE BEGIN PFP */
@@ -210,6 +214,21 @@ unsigned long getRunTimeCounterValue(void)
 
 //==============================RTOS MONITORING END==============================
 
+//==============================TIM1 BEGIN==============================
+void MyTimerCallback(DMA_HandleTypeDef *hdma)
+{
+    if (hdma == &hdma_tim1_up) {
+        HAL_TIM_Base_Stop(&htim1);
+        __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
+
+        // Сбросить состояние DMA
+        HAL_DMA_Abort(hdma);
+
+        // Теперь можно подготовить новый буфер и снова вызвать Start_Print_DMA()
+    }
+}
+//==============================TIM1 MONITORING BEGIN==============================
+
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -252,8 +271,12 @@ int main(void)
   MX_I2C3_Init();
   MX_ADC1_Init();
   MX_RTC_Init();
+  MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-  
+  HAL_DMA_RegisterCallback(&hdma_tim1_up,
+    HAL_DMA_XFER_CPLT_CB_ID,
+    MyTimerCallback);
+  // hdma_tim2_ch3_up.XferCpltCallback = MyTimerCallback;
   /* USER CODE END 2 */
 
   /* Init scheduler */
@@ -538,6 +561,52 @@ static void MX_SPI3_Init(void)
 }
 
 /**
+  * @brief TIM1 Initialization Function
+  * @param None
+  * @retval None
+  */
+static void MX_TIM1_Init(void)
+{
+
+  /* USER CODE BEGIN TIM1_Init 0 */
+
+  /* USER CODE END TIM1_Init 0 */
+
+  TIM_ClockConfigTypeDef sClockSourceConfig = {0};
+  TIM_MasterConfigTypeDef sMasterConfig = {0};
+
+  /* USER CODE BEGIN TIM1_Init 1 */
+
+  /* USER CODE END TIM1_Init 1 */
+  htim1.Instance = TIM1;
+  htim1.Init.Prescaler = 0;
+  htim1.Init.CounterMode = TIM_COUNTERMODE_UP;
+  htim1.Init.Period = 9;
+  htim1.Init.ClockDivision = TIM_CLOCKDIVISION_DIV1;
+  htim1.Init.RepetitionCounter = 0;
+  htim1.Init.AutoReloadPreload = TIM_AUTORELOAD_PRELOAD_DISABLE;
+  if (HAL_TIM_Base_Init(&htim1) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sClockSourceConfig.ClockSource = TIM_CLOCKSOURCE_INTERNAL;
+  if (HAL_TIM_ConfigClockSource(&htim1, &sClockSourceConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  sMasterConfig.MasterOutputTrigger = TIM_TRGO_UPDATE;
+  sMasterConfig.MasterSlaveMode = TIM_MASTERSLAVEMODE_DISABLE;
+  if (HAL_TIMEx_MasterConfigSynchronization(&htim1, &sMasterConfig) != HAL_OK)
+  {
+    Error_Handler();
+  }
+  /* USER CODE BEGIN TIM1_Init 2 */
+
+  /* USER CODE END TIM1_Init 2 */
+
+}
+
+/**
   * @brief USART2 Initialization Function
   * @param None
   * @retval None
@@ -596,6 +665,9 @@ static void MX_DMA_Init(void)
   /* DMA2_Stream0_IRQn interrupt configuration */
   HAL_NVIC_SetPriority(DMA2_Stream0_IRQn, 5, 0);
   HAL_NVIC_EnableIRQ(DMA2_Stream0_IRQn);
+  /* DMA2_Stream5_IRQn interrupt configuration */
+  HAL_NVIC_SetPriority(DMA2_Stream5_IRQn, 5, 0);
+  HAL_NVIC_EnableIRQ(DMA2_Stream5_IRQn);
 
 }
 
@@ -622,10 +694,15 @@ static void MX_GPIO_Init(void)
   HAL_GPIO_WritePin(GPIOA, LED_GREEN_Pin|MOTOR_Y_DIR_Pin|MOTOR_Y_STEP_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(SPI3_CS_SD_GPIO_Port, SPI3_CS_SD_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOB, S4_Pin|S5_Pin|S1_Pin|S2_Pin
+                          |S3_Pin|PWRB_Pin|PWRA_Pin|D3_Pin
+                          |D2_Pin|D1_Pin|DCLK_Pin|CSYNC_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin Output Level */
-  HAL_GPIO_WritePin(GPIOB, MOTOR_X_STEP_Pin|MOTOR_EN_Pin|MOTOR_X_DIR_Pin, GPIO_PIN_RESET);
+  HAL_GPIO_WritePin(GPIOC, MOTOR_X_STEP_Pin|MOTOR_EN_Pin|MOTOR_X_DIR_Pin, GPIO_PIN_RESET);
+
+  /*Configure GPIO pin Output Level */
+  HAL_GPIO_WritePin(SPI3_CS_SD_GPIO_Port, SPI3_CS_SD_Pin, GPIO_PIN_RESET);
 
   /*Configure GPIO pin : STICK_SW_Pin */
   GPIO_InitStruct.Pin = STICK_SW_Pin;
@@ -640,19 +717,30 @@ static void MX_GPIO_Init(void)
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(GPIOA, &GPIO_InitStruct);
 
+  /*Configure GPIO pins : S4_Pin S5_Pin S1_Pin S2_Pin
+                           S3_Pin PWRB_Pin PWRA_Pin D3_Pin
+                           D2_Pin D1_Pin DCLK_Pin CSYNC_Pin */
+  GPIO_InitStruct.Pin = S4_Pin|S5_Pin|S1_Pin|S2_Pin
+                          |S3_Pin|PWRB_Pin|PWRA_Pin|D3_Pin
+                          |D2_Pin|D1_Pin|DCLK_Pin|CSYNC_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
+
+  /*Configure GPIO pins : MOTOR_X_STEP_Pin MOTOR_EN_Pin MOTOR_X_DIR_Pin */
+  GPIO_InitStruct.Pin = MOTOR_X_STEP_Pin|MOTOR_EN_Pin|MOTOR_X_DIR_Pin;
+  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
+  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
+  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_VERY_HIGH;
+  HAL_GPIO_Init(GPIOC, &GPIO_InitStruct);
+
   /*Configure GPIO pin : SPI3_CS_SD_Pin */
   GPIO_InitStruct.Pin = SPI3_CS_SD_Pin;
   GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
   GPIO_InitStruct.Pull = GPIO_PULLUP;
   GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_LOW;
   HAL_GPIO_Init(SPI3_CS_SD_GPIO_Port, &GPIO_InitStruct);
-
-  /*Configure GPIO pins : MOTOR_X_STEP_Pin MOTOR_EN_Pin MOTOR_X_DIR_Pin */
-  GPIO_InitStruct.Pin = MOTOR_X_STEP_Pin|MOTOR_EN_Pin|MOTOR_X_DIR_Pin;
-  GPIO_InitStruct.Mode = GPIO_MODE_OUTPUT_PP;
-  GPIO_InitStruct.Pull = GPIO_PULLDOWN;
-  GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-  HAL_GPIO_Init(GPIOB, &GPIO_InitStruct);
 
   /* USER CODE BEGIN MX_GPIO_Init_2 */
 
