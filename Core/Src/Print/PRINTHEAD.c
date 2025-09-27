@@ -14,27 +14,41 @@
 #define PIN_S2     (1U << 14)
 #define PIN_S3     (1U << 15)
 
+#define PIN_SET(pin) ((uint32_t)(pin))
+#define PIN_RESET(pin) ((uint32_t)((pin) << 16))
+#define MakePatternPin(pin, value) (value ? PIN_SET(pin) : PIN_RESET(pin))
+#define MakePatternLine(PWRA, PWRB, DCLK, CSYNC, D1, D2, D3, S1, S2, S3, S4, S5) \
+    MakePatternPin(PIN_PWRA, PWRA)  | MakePatternPin(PIN_PWRB, PWRB)    | \
+    MakePatternPin(PIN_DCLK, DCLK)  | MakePatternPin(PIN_CSYNC, CSYNC)  | \
+    MakePatternPin(PIN_D1, D1)      | MakePatternPin(PIN_D2, D2)        | MakePatternPin(PIN_D3, D3) | \
+    MakePatternPin(PIN_S1, S1)      | MakePatternPin(PIN_S2, S2)        | MakePatternPin(PIN_S3, S3) | MakePatternPin(PIN_S4, S4) | MakePatternPin(PIN_S5, S5)
+
 #define PATTERN_LEN 16
+/*
+    Each line durations is equal timer duration.
+    Timer duration is based on the fastes signal - DCLK.
+    DCLK perion = 400 ns -> Timer period = 200 ns
+*/ 
 static uint32_t pattern[PATTERN_LEN] = {
-    (PIN_DCLK) | (PIN_D1) | (PIN_D2 << 16) | (PIN_CSYNC),
-    (PIN_DCLK << 16) | (PIN_D1) | (PIN_D2 << 16) | (PIN_CSYNC),
-    (PIN_DCLK) | (PIN_D1 << 16) | (PIN_D2) | (PIN_CSYNC),
-    (PIN_DCLK << 16) | (PIN_D1 << 16) | (PIN_D2) | (PIN_CSYNC),
+    //              PWRA,   PWRB,   DCLK,   CSYNC,  D1,      D2,     D3,     S1,     S2,     S3,     S4,     S5
+    MakePatternLine(0,      0,      1,      1,      1,       1,      1,      1,      0,      0,      0,      0),
+    MakePatternLine(0,      0,      0,      1,      1,       1,      1,      1,      0,      0,      0,      0),
+    MakePatternLine(0,      0,      1,      0,      1,       1,      1,      0,      1,      0,      0,      0),
+    MakePatternLine(0,      0,      0,      0,      1,       1,      1,      0,      1,      0,      0,      0),
+    MakePatternLine(0,      0,      1,      0,      1,       1,      1,      0,      0,      1,      0,      0),
+    MakePatternLine(0,      0,      0,      0,      1,       1,      1,      0,      0,      1,      0,      0),
+    MakePatternLine(0,      0,      1,      0,      1,       1,      1,      0,      0,      0,      1,      0),
+    MakePatternLine(0,      0,      0,      0,      1,       1,      1,      0,      0,      0,      1,      0),
+    MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      1),
+    MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      1),
 
-    (PIN_DCLK) | (PIN_D1) | (PIN_D2) | (PIN_CSYNC),
-    (PIN_DCLK << 16) | (PIN_D1) | (PIN_D2) | (PIN_CSYNC),
-    (PIN_DCLK) | (PIN_D1 << 16) | (PIN_D2 << 16) | (PIN_CSYNC),
-    (PIN_DCLK << 16) | (PIN_D1 << 16) | (PIN_D2 << 16) | (PIN_CSYNC),
 
-    (PIN_DCLK) | (PIN_D1) | (PIN_D2 << 16) | (PIN_CSYNC << 16),
-    (PIN_DCLK << 16) | (PIN_D1) | (PIN_D2 << 16) | (PIN_CSYNC << 16),
-    (PIN_DCLK) | (PIN_D1 << 16) | (PIN_D2) | (PIN_CSYNC << 16),
-    (PIN_DCLK << 16) | (PIN_D1 << 16) | (PIN_D2) | (PIN_CSYNC << 16),
-
-    (PIN_DCLK) | (PIN_D1) | (PIN_D2) | (PIN_CSYNC << 16),
-    (PIN_DCLK << 16) | (PIN_D1) | (PIN_D2) | (PIN_CSYNC << 16),
-    (PIN_DCLK) | (PIN_D1 << 16) | (PIN_D2 << 16) | (PIN_CSYNC << 16),
-    (PIN_DCLK << 16) | (PIN_D1 << 16) | (PIN_D2 << 16) | (PIN_CSYNC << 16),
+    MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0),
+    MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0),
+    MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0),
+    MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0),
+    MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0),
+    MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0)
 };
 
 extern TIM_HandleTypeDef htim1;
