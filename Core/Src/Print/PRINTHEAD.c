@@ -1,5 +1,6 @@
 #include "Print/PRINTHEAD.h"
 #include "LOG/LOG.h"
+#include <string.h>
 
 #define PIN_S4     (1U << 1)
 #define PIN_S5     (1U << 2)
@@ -24,12 +25,9 @@
     MakePatternPin(PIN_S1, S1)      | MakePatternPin(PIN_S2, S2)        | MakePatternPin(PIN_S3, S3) | MakePatternPin(PIN_S4, S4) | MakePatternPin(PIN_S5, S5)
 
 #define PATTERN_LEN 16
-/*
-    Each line durations is equal timer duration.
-    Timer duration is based on the fastes signal - DCLK.
-    DCLK perion = 400 ns -> Timer period = 200 ns
-*/ 
-static uint32_t pattern[PATTERN_LEN] = {
+#define PRINTHEAD__PatternsNumber 4
+
+static uint32_t PRINTHEAD__testPattern[PATTERN_LEN] = {
     //              PWRA,   PWRB,   DCLK,   CSYNC,  D1,      D2,     D3,     S1,     S2,     S3,     S4,     S5
     MakePatternLine(0,      0,      1,      1,      1,       1,      1,      1,      0,      0,      0,      0),
     MakePatternLine(0,      0,      0,      1,      1,       1,      1,      1,      0,      0,      0,      0),
@@ -41,8 +39,6 @@ static uint32_t pattern[PATTERN_LEN] = {
     MakePatternLine(0,      0,      0,      0,      1,       1,      1,      0,      0,      0,      1,      0),
     MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      1),
     MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      1),
-
-
     MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0),
     MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0),
     MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0),
@@ -51,8 +47,25 @@ static uint32_t pattern[PATTERN_LEN] = {
     MakePatternLine(0,      0,      0,      0,      0,       0,      0,      0,      0,      0,      0,      0)
 };
 
+static uint32_t PRINTHEAD__emptyPattern[PATTERN_LEN] = {0};
+/*
+    Each line durations is equal timer duration.
+    Timer duration is based on the fastes signal - DCLK.
+    DCLK perion = 400 ns -> Timer period = 200 ns
+*/ 
+static uint32_t pattern[PATTERN_LEN] = {0};
+static uint32_t* PRINTHEAD__patterns[PRINTHEAD__PatternsNumber] = {
+    PRINTHEAD__testPattern,
+    PRINTHEAD__testPattern,
+    PRINTHEAD__testPattern,
+    PRINTHEAD__emptyPattern
+};
+static uint8_t PRINTHEAD__currentPatternNumber = 0;
+
 extern TIM_HandleTypeDef htim1;
 extern DMA_HandleTypeDef hdma_tim1_up;
+
+static bool PRINTHEAD__isStarted;
 
 void Start_Print_DMA(void)
 {
@@ -61,7 +74,7 @@ void Start_Print_DMA(void)
     }
 
     if (HAL_DMA_Start_IT(&hdma_tim1_up,
-                     (uint32_t)pattern,
+                     (uint32_t)PRINTHEAD__patterns[PRINTHEAD__currentPatternNumber],
                      (uint32_t)&GPIOB->BSRR,
                      PATTERN_LEN) != HAL_OK)
     {
@@ -73,6 +86,31 @@ void Start_Print_DMA(void)
     {
         LOG_Error("%s", "Timer Start error");
         return;
+    }
+}
+
+static void PRINTHEAD__TimerDMACallback(DMA_HandleTypeDef *hdma)
+{
+    if (hdma == &hdma_tim1_up) {
+        HAL_TIM_Base_Stop(&htim1);
+        __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
+        // Сбросить состояние DMA
+        HAL_DMA_Abort(hdma);
+
+        // Теперь можно подготовить новый буфер и снова вызвать Start_Print_DMA()
+        if (PRINTHEAD__isStarted) Start_Print_DMA();
+    }
+}
+
+static void PRINTHEAD__HalfTimerDMACallback(DMA_HandleTypeDef *hdma)
+{
+    if (hdma == &hdma_tim1_up) {
+        PRINTHEAD__currentPatternNumber++;
+
+        if (PRINTHEAD__currentPatternNumber >= PRINTHEAD__PatternsNumber)
+        {
+            PRINTHEAD__currentPatternNumber = 0;
+        }
     }
 }
 
@@ -102,11 +140,19 @@ void PRINTHEAD_Init(PRINTHEAD_tstInstance* head, PRINTHEAD_tenHeadType headType)
     
     PRINTHEAD__InitHeadPin(&head->ID,       NULL, GPIO_PIN_0);
     PRINTHEAD__InitHeadPin(&head->TS,       NULL, GPIO_PIN_0);
+
+    // TODO 
+    
+    memcpy(pattern, PRINTHEAD__patterns[0], PATTERN_LEN * sizeof(uint32_t));
+
+    HAL_DMA_RegisterCallback(&hdma_tim1_up, HAL_DMA_XFER_CPLT_CB_ID, PRINTHEAD__TimerDMACallback);
+    HAL_DMA_RegisterCallback(&hdma_tim1_up, HAL_DMA_XFER_HALFCPLT_CB_ID, PRINTHEAD__HalfTimerDMACallback);
+    PRINTHEAD__isStarted = false;
 }
 
 void PRINTHEAD_Deinit()
 {
-    // TODO
+    PRINTHEAD__isStarted = false;
 }
 
 void PRINTHEAD_SetColor(PRINTHEAD_tstInstance* head, uint8_t color) // TODO: is it need to take nozzle column/row
@@ -116,5 +162,21 @@ void PRINTHEAD_SetColor(PRINTHEAD_tstInstance* head, uint8_t color) // TODO: is 
 
 void PRINTHEAD_Process(PRINTHEAD_tstInstance* head)
 {
+    
+}
+
+void PRINTHEAD_Start()
+{
+    PRINTHEAD__isStarted = true;
     Start_Print_DMA();
+}
+
+void PRINTHEAD_Stop()
+{
+    PRINTHEAD__isStarted = false;
+}
+
+bool PRINTHEAD_IsStarted()
+{
+    return PRINTHEAD__isStarted;
 }

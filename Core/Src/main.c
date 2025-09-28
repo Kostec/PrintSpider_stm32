@@ -214,21 +214,6 @@ unsigned long getRunTimeCounterValue(void)
 
 //==============================RTOS MONITORING END==============================
 
-//==============================TIM1 BEGIN==============================
-void MyTimerCallback(DMA_HandleTypeDef *hdma)
-{
-    if (hdma == &hdma_tim1_up) {
-        HAL_TIM_Base_Stop(&htim1);
-        __HAL_TIM_DISABLE_DMA(&htim1, TIM_DMA_UPDATE);
-
-        // Сбросить состояние DMA
-        HAL_DMA_Abort(hdma);
-
-        // Теперь можно подготовить новый буфер и снова вызвать Start_Print_DMA()
-    }
-}
-//==============================TIM1 MONITORING BEGIN==============================
-
 /* USER CODE END PFP */
 
 /* Private user code ---------------------------------------------------------*/
@@ -273,9 +258,6 @@ int main(void)
   MX_RTC_Init();
   MX_TIM1_Init();
   /* USER CODE BEGIN 2 */
-  HAL_DMA_RegisterCallback(&hdma_tim1_up,
-    HAL_DMA_XFER_CPLT_CB_ID,
-    MyTimerCallback);
   // hdma_tim2_ch3_up.XferCpltCallback = MyTimerCallback;
   /* USER CODE END 2 */
 
