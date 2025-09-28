@@ -37,7 +37,14 @@ void PRINTCTRL_Task(void *pvParameters)
 
     for(;;)
     {
-        PRINTHEAD_Process(&PRINTCTRL__blackHead);
+        if (!PRINTHEAD_IsStarted())
+        {
+            PRINTHEAD_Start();
+        }
+        else
+        {
+            PRINTHEAD_Stop();
+        }
         osDelay(1);
     }
 }

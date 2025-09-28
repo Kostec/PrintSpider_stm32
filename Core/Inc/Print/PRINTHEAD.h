@@ -2,6 +2,7 @@
 #define PRINTHEAD_H
 
 #include "stdint.h"
+#include "stdbool.h"
 #include "main.h"
 
 typedef enum {
@@ -33,9 +34,14 @@ typedef struct {
     PRINTHEAD_tstHeadPin TS;     // Unknown what it is
 } PRINTHEAD_tstInstance;
 
+
 void PRINTHEAD_Init(PRINTHEAD_tstInstance* head, PRINTHEAD_tenHeadType headType);
 void PRINTHEAD_Deinit();
 void PRINTHEAD_SetColor(PRINTHEAD_tstInstance* head, uint8_t color);
 void PRINTHEAD_Process(PRINTHEAD_tstInstance* head);
+
+void PRINTHEAD_Start();
+void PRINTHEAD_Stop();
+bool PRINTHEAD_IsStarted();
 
 #endif // PRINTHEAD_H
