@@ -84,7 +84,7 @@ of the inkjet nozzles in row `row`. The black cartridge has two rows, the 2nd on
 direction and interleaved with the 1st (offset by half a nozzle). Note that the 2 first and last nozzles 
 of each 168-nozzle row are not connected (giving a total of 324 nozzles in the combined two rows).
 */
-void printspider_set_nozzle_black(uint8_t *l, int p, int row);
+void printspider_set_nozzle_black(uint8_t *l, int nozzleIdx);
 
 /*
 Use the nozzle data in `nozdata` combined with the waveform template `tp` which has a length of `l` 16-bit 

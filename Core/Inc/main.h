@@ -69,14 +69,38 @@ void Error_Handler(void);
 #define MOTOR_Y_STEP_GPIO_Port GPIOA
 #define STICK_X_Pin GPIO_PIN_0
 #define STICK_X_GPIO_Port GPIOB
+#define S4_Pin GPIO_PIN_1
+#define S4_GPIO_Port GPIOB
+#define S5_Pin GPIO_PIN_2
+#define S5_GPIO_Port GPIOB
+#define S1_Pin GPIO_PIN_13
+#define S1_GPIO_Port GPIOB
+#define S2_Pin GPIO_PIN_14
+#define S2_GPIO_Port GPIOB
+#define S3_Pin GPIO_PIN_15
+#define S3_GPIO_Port GPIOB
+#define MOTOR_X_STEP_Pin GPIO_PIN_6
+#define MOTOR_X_STEP_GPIO_Port GPIOC
+#define MOTOR_EN_Pin GPIO_PIN_7
+#define MOTOR_EN_GPIO_Port GPIOC
+#define MOTOR_X_DIR_Pin GPIO_PIN_8
+#define MOTOR_X_DIR_GPIO_Port GPIOC
 #define SPI3_CS_SD_Pin GPIO_PIN_2
 #define SPI3_CS_SD_GPIO_Port GPIOD
-#define MOTOR_X_STEP_Pin GPIO_PIN_3
-#define MOTOR_X_STEP_GPIO_Port GPIOB
-#define MOTOR_EN_Pin GPIO_PIN_4
-#define MOTOR_EN_GPIO_Port GPIOB
-#define MOTOR_X_DIR_Pin GPIO_PIN_5
-#define MOTOR_X_DIR_GPIO_Port GPIOB
+#define PWRB_Pin GPIO_PIN_3
+#define PWRB_GPIO_Port GPIOB
+#define PWRA_Pin GPIO_PIN_4
+#define PWRA_GPIO_Port GPIOB
+#define D3_Pin GPIO_PIN_5
+#define D3_GPIO_Port GPIOB
+#define D2_Pin GPIO_PIN_6
+#define D2_GPIO_Port GPIOB
+#define D1_Pin GPIO_PIN_7
+#define D1_GPIO_Port GPIOB
+#define DCLK_Pin GPIO_PIN_8
+#define DCLK_GPIO_Port GPIOB
+#define CSYNC_Pin GPIO_PIN_9
+#define CSYNC_GPIO_Port GPIOB
 
 /* USER CODE BEGIN Private defines */
 
