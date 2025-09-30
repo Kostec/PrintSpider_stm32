@@ -56,7 +56,8 @@
         "usbd_printer.h": "c",
         "cstdlib": "c",
         "usbd_composite_builder.h": "c",
-        "usbd_composite_builder_conf.h": "c"
+        "usbd_composite_builder_conf.h": "c",
+        "printhead.h": "c"
     },
 
     "cmake.buildDirectory": "build/",

@@ -1,3 +1,4 @@
+#if 0
 /*
 Copyright 2021 Pavel Semenov
 
@@ -288,3 +289,4 @@ void PRINT_setup(void) {
     setup_gpio();
     select_waveform();
 }
+#endif
