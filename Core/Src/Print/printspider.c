@@ -85,15 +85,14 @@ const bw_nozinfo_t ni[] = {
 // offset in the X direction and interleaved with the 1st (offset by half a
 // nozzle). Note that the 2 first and last nozzles of each 168-nozzle row are
 // not connected (giving a total of 324 nozzles in the combined two rows).
-void printspider_set_nozzle_black(uint8_t *l, int p, int row) {
+void printspider_set_nozzle_black(uint8_t *l, int nozzleIdx) {
     static const int bo[2][14] = {
         {4, 12, 10, 2, 8, 0, 6, 13, 7, 1, 9, 3, 11, 5},
         {13, 7, 1, 9, 3, 11, 5, 4, 12, 10, 2, 8, 0, 6},
     };
 
-    if (row) p += 168;
-    int j = p / 14;
-    int k = 13 - (p % 14);
+    int j = nozzleIdx / 14;
+    int k = 13 - (nozzleIdx % 14);
 
     l[ni[j].c * 14 + bo[ni[j].order][k]] |= (1 << ni[j].bit);
 }
@@ -108,6 +107,8 @@ static inline __attribute__((always_inline)) void set_signals(uint16_t *buf,
 // The masks for each bit in an 16-bit word of template data
 #define TP_BIT_TOGGLE1 (1 << 0)
 #define TP_BIT_TOGGLE2 (1 << 1)
+
+#if 0 //
 #define TP_S2 (1 << 4)
 #define TP_S4 (1 << 5)
 #define TP_S1 (1 << 6)
@@ -116,6 +117,8 @@ static inline __attribute__((always_inline)) void set_signals(uint16_t *buf,
 #define TP_S3 (1 << 9)
 #define TP_F3 (1 << 10)
 #define TP_F5 (1 << 11)
+#endif
+
 #define TP_CSYNC_LAST (1 << 14)
 #define TP_CSYNC_NORM (1 << 15)
 
@@ -165,13 +168,9 @@ int printspider_generate_waveform(uint16_t *waveform_buffer, const uint16_t *tp,
         if ((power & 0xf0) == 0x00) mask &= ~OUT_F5;
         // Depending on which packet we're generating, we pick a different csync
         // line.
-        uint16_t csync_sel = j == 13 ? TP_CSYNC_LAST : TP_CSYNC_NORM;
-
-        // if (j == 13) {  // last one
-        //     csync_sel = TP_CSYNC_LAST;
-        // } else {
-        //     csync_sel = TP_CSYNC_NORM;
-        // }
+        uint16_t csync_sel = j == 13 ?
+                             TP_CSYNC_LAST : // last one
+                             TP_CSYNC_NORM;
 
         for (int i = 0; i < l; i++) {
             if (is_empty) {

@@ -35,16 +35,17 @@ void PRINTCTRL_Task(void *pvParameters)
     MOTORCTRL_runMotor(MOTORCTRL_CARRET);
     MOTORCTRL_runMotor(MOTORCTRL_PAPER);
 
+    PRINTHEAD_tunColor color = {0};
+    PRINTHEAD_SetLineColor(&PRINTCTRL__blackHead, color);
+    PRINTHEAD_Start();
     for(;;)
     {
         if (!PRINTHEAD_IsStarted())
         {
+            PRINTHEAD_SetLineColor(&PRINTCTRL__blackHead, color);
             PRINTHEAD_Start();
         }
-        else
-        {
-            PRINTHEAD_Stop();
-        }
-        osDelay(1);
+        osDelay(1000);
+        PRINTHEAD_Stop();
     }
 }
