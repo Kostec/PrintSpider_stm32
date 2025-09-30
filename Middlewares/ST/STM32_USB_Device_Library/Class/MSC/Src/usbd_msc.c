@@ -312,10 +312,6 @@ uint8_t USBD_MSC_Setup(USBD_HandleTypeDef *pdev, USBD_SetupReqTypedef *req)
   uint32_t max_lun;
   uint16_t status_info = 0U;
 
-  if (pdev->pUserData[pdev->classId] == NULL) {
-    return USBD_FAIL;
-  }
-
 #ifdef USE_USBD_COMPOSITE
   /* Get the Endpoints addresses allocated for this class instance */
   MSCInEpAdd  = USBD_CoreGetEPAdd(pdev, USBD_EP_IN, USBD_EP_TYPE_BULK, (uint8_t)pdev->classId);
