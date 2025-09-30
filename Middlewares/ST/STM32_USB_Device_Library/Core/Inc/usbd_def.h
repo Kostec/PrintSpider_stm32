@@ -347,7 +347,6 @@ typedef struct
 {
   USBD_CompositeClassTypeDef   ClassType;
   uint32_t                     ClassId;
-  USBD_ClassTypeDef           *pClass;
   uint32_t                     Active;
   uint32_t                     NumEps;
   USBD_EPTypeDef               Eps[USBD_MAX_CLASS_ENDPOINTS];

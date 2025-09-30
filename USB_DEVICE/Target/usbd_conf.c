@@ -614,16 +614,11 @@ USBD_StatusTypeDef USBD_LL_SetTestMode(USBD_HandleTypeDef *pdev, uint8_t testmod
   * @param  size: Size of allocated memory
   * @retval None
   */
- void *USBD_static_malloc(uint32_t size)
- {
-   static uint32_t pool[2][256]; // 1 Kb for each class
-   static int idx = 0;
- 
-   if (idx < 2) {
-     return pool[idx++];
-   }
-   return NULL;
- }
+void *USBD_static_malloc(uint32_t size)
+{
+  static uint32_t mem[(sizeof(USBD_MSC_BOT_HandleTypeDef)/4)+1];/* On 32-bit boundary */
+  return mem;
+}
 
 /**
   * @brief  Dummy memory free
