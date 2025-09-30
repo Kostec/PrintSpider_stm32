@@ -5,6 +5,24 @@
 #include "stdbool.h"
 #include "main.h"
 
+/*
+    PIXEL_CMYK pix;
+    pix.value = 0xAABBCCDD;
+    uint8_t c = pix.C; // 0xDD
+    uint8_t m = pix.M; // 0xCC
+    uint8_t y = pix.Y; // 0xBB
+    uint8_t k = pix.K; // 0xAA
+*/
+typedef union {
+        struct {
+            uint8_t C;
+            uint8_t M;
+            uint8_t Y;
+            uint8_t K;
+        } CMYK;
+        uint32_t value;;
+} PRINTHEAD_tunColor;
+
 typedef enum {
     PRINTHEAD_typeBlack,
     PRINTHEAD_typeColor
@@ -37,7 +55,7 @@ typedef struct {
 
 void PRINTHEAD_Init(PRINTHEAD_tstInstance* head, PRINTHEAD_tenHeadType headType);
 void PRINTHEAD_Deinit();
-void PRINTHEAD_SetColor(PRINTHEAD_tstInstance* head, uint8_t color);
+void PRINTHEAD_SetLineColor(PRINTHEAD_tstInstance* head, PRINTHEAD_tunColor color);
 void PRINTHEAD_Process(PRINTHEAD_tstInstance* head);
 
 void PRINTHEAD_Start();
