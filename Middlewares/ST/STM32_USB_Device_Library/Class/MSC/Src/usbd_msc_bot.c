@@ -117,7 +117,7 @@ void MSC_BOT_Init(USBD_HandleTypeDef *pdev)
   hmsc->scsi_sense_head = 0U;
   hmsc->scsi_medium_state = SCSI_MEDIUM_UNLOCKED;
 
-  ((USBD_StorageTypeDef *)pdev->pUserData[pdev->classId])->Init(0);
+  ((USBD_StorageTypeDef *)pdev->pUserData[pdev->classId])->Init(0U);
 
   (void)USBD_LL_FlushEP(pdev, MSCOutEpAdd);
   (void)USBD_LL_FlushEP(pdev, MSCInEpAdd);
