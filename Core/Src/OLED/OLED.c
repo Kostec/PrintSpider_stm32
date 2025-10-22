@@ -105,6 +105,6 @@ void OLED_Task(void *pvParameters)
     for(;;)
     {
         ProcessOLED();
-        osDelay(50);
+        osDelay(10);
     }
 }
