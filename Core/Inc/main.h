@@ -57,18 +57,12 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
-#define STICK_Y_Pin GPIO_PIN_0
-#define STICK_Y_GPIO_Port GPIOC
-#define STICK_SW_Pin GPIO_PIN_1
-#define STICK_SW_GPIO_Port GPIOC
 #define LED_GREEN_Pin GPIO_PIN_5
 #define LED_GREEN_GPIO_Port GPIOA
 #define MOTOR_Y_DIR_Pin GPIO_PIN_6
 #define MOTOR_Y_DIR_GPIO_Port GPIOA
 #define MOTOR_Y_STEP_Pin GPIO_PIN_7
 #define MOTOR_Y_STEP_GPIO_Port GPIOA
-#define STICK_X_Pin GPIO_PIN_0
-#define STICK_X_GPIO_Port GPIOB
 #define S4_Pin GPIO_PIN_1
 #define S4_GPIO_Port GPIOB
 #define S5_Pin GPIO_PIN_2
@@ -85,8 +79,6 @@ void Error_Handler(void);
 #define MOTOR_EN_GPIO_Port GPIOC
 #define MOTOR_X_DIR_Pin GPIO_PIN_8
 #define MOTOR_X_DIR_GPIO_Port GPIOC
-#define SPI3_CS_SD_Pin GPIO_PIN_2
-#define SPI3_CS_SD_GPIO_Port GPIOD
 #define PWRB_Pin GPIO_PIN_3
 #define PWRB_GPIO_Port GPIOB
 #define PWRA_Pin GPIO_PIN_4

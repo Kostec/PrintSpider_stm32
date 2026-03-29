@@ -1,13 +1,22 @@
 {
     "cmake.useCMakePresets": "always",
-    "cortex-debug.variableUseNaturalFormat": false,
-    "cortex-debug.openocdPath": "${config:openOCD_dir}/openocd.exe",
+    "cortex-debug.variableUseNaturalFormat": true,
     
-    // Local environment
-    "openOCD_dir" : "C:/tools/stmOpenOCD",
+    // ============== WINDOWS BEGIN ==============
+    // "cortex-debug.openocdPath": "${config:openOCD_dir}/openocd.exe",
+
+    // "openOCD_dir" : "C:/tools/stmOpenOCD",
+    // "openOCD_scripts": "${config:openOCD_dir}/st_scripts",
+    // "plink": "C:/Program Files/PuTTY/plink.exe",
+    // ============== WINDOWS END ==============
+
+    // ============== LINUX BEGIN ==============
+    "cortex-debug.openocdPath": "/usr/bin/openocd",
+    "openOCD_scripts": "/run/media/kostec/E4FA9180FA915022/tools/stmOpenOCD/st_scripts", // Path to STM32 scripts
+    "plink": "plink",
+    // ============== LINUX END ==============
+
     "openOCD_CFG": "${workspaceFolder}/test.cfg",
-    "openOCD_scripts": "${config:openOCD_dir}/st_scripts",
-    "plink": "C:/Program Files/PuTTY/plink.exe",
     "files.associations": {
         "stm32f4xx_hal.h": "c",
         "stm32f4xx_hal_gpio.h": "c",
