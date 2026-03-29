@@ -182,7 +182,7 @@ void LOG_Task(void *pvParameters)
         // ждём новый лог (блокируемся здесь)
         if (osMessageQueueGet(logQueueHandle, &msg, NULL, osWaitForever) == osOK)
         {
-            printf(msg.buf);
+            printf("%s", msg.buf);
         }
     }
 }
