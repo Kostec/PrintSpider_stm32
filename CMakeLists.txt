@@ -23,13 +23,11 @@ set(CORE_SOURCES
     # CORE FEATURES
     Core/Src/Print/printspider.c
     Core/Src/Print/print.c
-    Core/Src/LED/ws2812.c
 )
 
 file(GLOB_RECURSE SOURCES
     Drivers/STM32F4xx_HAL_Driver/Src/*.*
     Core/Src/*.*
-    FATFS/*.*
 )
 set (PROJECT_SOURCES
     # LIST OF ALL PROJECT FILE SOURCES
@@ -49,18 +47,12 @@ set (CORE_INCLUDES
 set (PROJECT_INCLUDES
 	# LIST INCLUDE DIRECTORIES HERE
     Core/Inc
-    Core/Inc/SD
     Core/Inc/LED
     Core/Inc/LOG
-    Core/Inc/OLED
-    Core/Inc/OLED/MENU
     Core/Inc/Print
     Drivers/STM32F4xx_HAL_Driver/Inc
     Drivers/CMSIS/Include
     Drivers/CMSIS/Device/ST/STM32F4xx/Include
-
-    FATFS/App
-    FATFS/Target
 )
 
 file(GLOB_RECURSE SOURCES
@@ -76,14 +68,6 @@ set (FREE_RTOS_INCLUDES
 
 file(GLOB_RECURSE FREE_RTOS_SOURCES
     Middlewares/Third_Party/FreeRTOS/*.*
-)
-
-set (FatFs_MIDDLEWARE_INCLUDES
-    Middlewares/Third_Party/FatFs/src
-)
-
-file(GLOB_RECURSE FatFs_MIDDLEWARE_SOURCES
-    Middlewares/Third_Party/FatFs/src/*.*
 )
 
 set (USB_DEVICE_LIB_MIDDLEWARE_INCLUDES
@@ -102,22 +86,14 @@ Middlewares/ST/STM32_USB_Device_Library/Core/Src/*.*
 
 set(MIDDLEWARE_INCLUDES
     ${FREE_RTOS_INCLUDES}
-    ${FatFs_MIDDLEWARE_INCLUDES}
     ${USB_DEVICE_LIB_MIDDLEWARE_INCLUDES}
 )
 
 set(MIDDLEWARE_SOURCES
     ${FREE_RTOS_SOURCES}
-    ${FatFs_MIDDLEWARE_SOURCES}
     ${USB_DEVICE_LIB_MIDDLEWARE_SOURCES}
 )
 # ==============================MIDDLEWARE END==============================
-
-# ==============================OLED BEGIN==============================
-set(OLED_INCLUDES ssd1306)
-
-file(GLOB_RECURSE OLED_SOURCES ssd1306/*.*)
-# ==============================OLED END==============================
 
 # ==============================USB BEGIN==============================
 set(USB_DEVICE_INCLUDES 
